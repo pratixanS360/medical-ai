@@ -3,12 +3,6 @@ import OpenAI from 'openai'
 
 let chatHistory: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
-const openai = new OpenAI({
-  organization: import.meta.env.VITE_ORG_ID as string,
-  project: import.meta.env.VITE_PROJECT_ID as string,
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY as string,
-  dangerouslyAllowBrowser: true
-})
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -24,7 +18,6 @@ function sendQuery() {
   const output = document.getElementById('output') as HTMLPreElement
   postData('/.netlify/functions/ai-chat', { chatHistory: chatHistory, newValue: input.value }).then(
     (data) => {
-      console.log(data)
       chatHistory = data
       input.value = ''
       output.innerHTML = JSON.stringify(chatHistory, null, 2)
