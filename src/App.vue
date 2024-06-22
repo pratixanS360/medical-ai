@@ -5,7 +5,7 @@ import AiPrompt from './components/AiPrompt.vue'
 <template>
   <header>
     <div class="wrapper">
-      <AiPrompt msg="" />
+      <AiPrompt />
     </div>
   </header>
 </template>

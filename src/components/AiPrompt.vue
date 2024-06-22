@@ -1,10 +1,7 @@
-<script setup lang="ts">
-defineProps<{
-  msg: string
-}>()
+<script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
 
-const chatHistory: { role: string; content: string }[] = []
+const chatHistory: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
 const openai = new OpenAI({
   organization: import.meta.env.VITE_ORG_ID as string,
@@ -13,18 +10,17 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 })
 function sendQuery() {
-  const input = document.getElementById('query')
-  const chatwindow = document.querySelector('#chatwindow pre') || document.createElement('div')
-
-  const chatEvent = { role: 'user', content: input.value || '' }
-  chatHistory.push(chatEvent)
+  const input = document.getElementById('query') as HTMLInputElement
+  const output = document.getElementById('output') as HTMLPreElement
+  chatHistory.push({ role: 'user', content: input.value || '' })
+  input.value = ''
   const params: OpenAI.Chat.ChatCompletionCreateParams = {
     messages: chatHistory,
     model: 'gpt-3.5-turbo'
   }
   openai.chat.completions.create(params).then((response) => {
     chatHistory.push(response.choices[0].message)
-    chatwindow.innerHTML = JSON.stringify(chatHistory, false, 2)
+    output.innerHTML = JSON.stringify(chatHistory, null, 2)
   })
 }
 </script>
@@ -34,7 +30,5 @@ function sendQuery() {
     <label>Enter a query:<input type="text" id="query" @keyup.enter="sendQuery" /></label>
     <input type="submit" value="Send" @click="sendQuery" />
   </div>
-  <div id="chatwindow">
-    <pre>{{ chatCompletion }}</pre>
-  </div>
+  <pre id="output">{{ JSON.stringify(chatHistory, false, 2) }}</pre>
 </template>
