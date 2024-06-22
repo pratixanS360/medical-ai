@@ -1,7 +1,8 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
+import { ref } from 'vue'
 
-let chatHistory: OpenAI.Chat.ChatCompletionMessageParam[] = []
+const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
@@ -15,14 +16,13 @@ const postData = async (url = '', data = {}) => {
 }
 function sendQuery() {
   const input = document.getElementById('query') as HTMLInputElement
-  const output = document.getElementById('output') as HTMLPreElement
-  postData('/.netlify/functions/ai-chat', { chatHistory: chatHistory, newValue: input.value }).then(
-    (data) => {
-      chatHistory = data
-      input.value = ''
-      output.innerHTML = JSON.stringify(chatHistory, null, 2)
-    }
-  )
+  postData('/.netlify/functions/ai-chat', {
+    chatHistory: chatHistory.value.reverse(),
+    newValue: input.value
+  }).then((data) => {
+    chatHistory.value = data.reverse()
+    input.value = ''
+  })
 }
 </script>
 
@@ -31,5 +31,12 @@ function sendQuery() {
     <label>Enter a query:<input type="text" id="query" @keyup.enter="sendQuery" /></label>
     <input type="submit" value="Send" @click="sendQuery" />
   </div>
-  <pre id="output">{{ JSON.stringify(chatHistory, false, 2) }}</pre>
+  <div class="chat-area">
+    <div v-for="x in chatHistory" :key="x" :class="'bubble-row ' + x.role">
+      <div class="bubble">
+        <cite>{{ x.role }}:</cite>
+        <p>{{ x.content }}</p>
+      </div>
+    </div>
+  </div>
 </template>
