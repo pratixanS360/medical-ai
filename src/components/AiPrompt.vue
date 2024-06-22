@@ -3,7 +3,7 @@ import OpenAI from 'openai'
 import { ref } from 'vue'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
-
+let isLoading = ref<boolean>(false)
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -14,29 +14,33 @@ const postData = async (url = '', data = {}) => {
   })
   return response.json()
 }
-function sendQuery() {
+const sendQuery = () => {
+  isLoading.value = true
   const input = document.getElementById('query') as HTMLInputElement
   postData('/.netlify/functions/ai-chat', {
-    chatHistory: chatHistory.value.reverse(),
+    chatHistory: chatHistory.value,
     newValue: input.value
   }).then((data) => {
-    chatHistory.value = data.reverse()
+    isLoading.value = false
+    chatHistory.value = data
     input.value = ''
   })
 }
 </script>
 
 <template>
-  <div class="prompt">
-    <label>Enter a query:<input type="text" id="query" @keyup.enter="sendQuery" /></label>
-    <input type="submit" value="Send" @click="sendQuery" />
-  </div>
   <div class="chat-area">
-    <div v-for="x in chatHistory" :key="x" :class="'bubble-row ' + x.role">
+    <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
       <div class="bubble">
         <cite>{{ x.role }}:</cite>
         <p>{{ x.content }}</p>
       </div>
+    </div>
+  </div>
+  <div :class="'prompt ' + isLoading">
+    <div class="inner">
+      <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
+      <input type="submit" value="Send" @click="sendQuery" />
     </div>
   </div>
 </template>

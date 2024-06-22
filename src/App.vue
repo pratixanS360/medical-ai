@@ -3,9 +3,7 @@ import AiPrompt from './components/AiPrompt.vue'
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <AiPrompt />
-    </div>
-  </header>
+  <div class="wrapper">
+    <AiPrompt />
+  </div>
 </template>
