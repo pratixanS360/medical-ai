@@ -1,7 +1,7 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
 
-const chatHistory: OpenAI.Chat.ChatCompletionMessageParam[] = []
+let chatHistory: OpenAI.Chat.ChatCompletionMessageParam[] = []
 
 const openai = new OpenAI({
   organization: import.meta.env.VITE_ORG_ID as string,
@@ -9,19 +9,27 @@ const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY as string,
   dangerouslyAllowBrowser: true
 })
+const postData = async (url = '', data = {}) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  return response.json()
+}
 function sendQuery() {
   const input = document.getElementById('query') as HTMLInputElement
   const output = document.getElementById('output') as HTMLPreElement
-  chatHistory.push({ role: 'user', content: input.value || '' })
-  input.value = ''
-  const params: OpenAI.Chat.ChatCompletionCreateParams = {
-    messages: chatHistory,
-    model: 'gpt-3.5-turbo'
-  }
-  openai.chat.completions.create(params).then((response) => {
-    chatHistory.push(response.choices[0].message)
-    output.innerHTML = JSON.stringify(chatHistory, null, 2)
-  })
+  postData('/.netlify/functions/ai-chat', { chatHistory: chatHistory, newValue: input.value }).then(
+    (data) => {
+      console.log(data)
+      chatHistory = data
+      input.value = ''
+      output.innerHTML = JSON.stringify(chatHistory, null, 2)
+    }
+  )
 }
 </script>
 
