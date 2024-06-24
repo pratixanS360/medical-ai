@@ -1,34 +1,46 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
+import { ref } from 'vue'
 
-const chatHistory: OpenAI.Chat.ChatCompletionMessageParam[] = []
-
-const openai = new OpenAI({
-  organization: import.meta.env.VITE_ORG_ID as string,
-  project: import.meta.env.VITE_PROJECT_ID as string,
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY as string,
-  dangerouslyAllowBrowser: true
-})
-function sendQuery() {
+const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
+let isLoading = ref<boolean>(false)
+const postData = async (url = '', data = {}) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  })
+  return response.json()
+}
+const sendQuery = () => {
+  isLoading.value = true
   const input = document.getElementById('query') as HTMLInputElement
-  const output = document.getElementById('output') as HTMLPreElement
-  chatHistory.push({ role: 'user', content: input.value || '' })
-  input.value = ''
-  const params: OpenAI.Chat.ChatCompletionCreateParams = {
-    messages: chatHistory,
-    model: 'gpt-3.5-turbo'
-  }
-  openai.chat.completions.create(params).then((response) => {
-    chatHistory.push(response.choices[0].message)
-    output.innerHTML = JSON.stringify(chatHistory, null, 2)
+  postData('/.netlify/functions/ai-chat', {
+    chatHistory: chatHistory.value,
+    newValue: input.value
+  }).then((data) => {
+    isLoading.value = false
+    chatHistory.value = data
+    input.value = ''
   })
 }
 </script>
 
 <template>
-  <div class="prompt">
-    <label>Enter a query:<input type="text" id="query" @keyup.enter="sendQuery" /></label>
-    <input type="submit" value="Send" @click="sendQuery" />
+  <div class="chat-area">
+    <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
+      <div class="bubble">
+        <cite>{{ x.role }}:</cite>
+        <p>{{ x.content }}</p>
+      </div>
+    </div>
   </div>
-  <pre id="output">{{ JSON.stringify(chatHistory, false, 2) }}</pre>
+  <div :class="'prompt ' + isLoading">
+    <div class="inner">
+      <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
+      <input type="submit" value="Send" @click="sendQuery" />
+    </div>
+  </div>
 </template>
