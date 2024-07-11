@@ -21,6 +21,18 @@
   padding: 5px 10px 10px;
   margin-bottom: 10px;
   font-family: sans-serif;
+  animation: pop 0.5s ease-in-out;
+
+  @keyframes pop {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 }
 .bubble cite {
   font-style: normal;
