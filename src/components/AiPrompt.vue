@@ -43,15 +43,6 @@ const sendQuery = () => {
 </script>
 
 <template>
-  <div>
-    <GNAP
-      @on-authorized="showAuth"
-      @jwt="showJWT"
-      helper="blue large"
-      location="https://nosh-app-mj3xd.ondigitalocean.app/app/chart/nosh_2c23641c-c1b4-4f5c-92e8-c749c54a34da"
-      server="https://shihjay.xyz/api/as"
-    />
-  </div>
   <div class="chat-area">
     <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
       <div class="bubble">
@@ -64,7 +55,13 @@ const sendQuery = () => {
     <div class="inner">
       <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
       <input type="submit" value="Send" @click="sendQuery" />
-      <input type="button" value="connect" @click="connectToAi" />
+      <GNAP
+        @on-authorized="showAuth"
+        @jwt="showJWT"
+        helper="blue large"
+        location="https://nosh-app-mj3xd.ondigitalocean.app/app/chart/nosh_2c23641c-c1b4-4f5c-92e8-c749c54a34da"
+        server="https://shihjay.xyz/api/as"
+      />
     </div>
   </div>
 </template>
