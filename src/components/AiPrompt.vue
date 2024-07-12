@@ -6,17 +6,6 @@ import 'vue3-gnap/dist/style.css'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 let isLoading = ref<boolean>(false)
-const connectToAi = async () => {
-  const response = await fetch('/.netlify/functions/gnap', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ message: 'connect' })
-  })
-  const finalAnswer = await response.json()
-  console.log(finalAnswer)
-}
 
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
@@ -57,7 +46,7 @@ const sendQuery = () => {
       <input type="submit" value="Send" @click="sendQuery" />
       <GNAP
         helper="blue large"
-        location="https://nosh-app-mj3xd.ondigitalocean.app/app/chart/nosh_2c23641c-c1b4-4f5c-92e8-c749c54a34da"
+        location="https://nosh-app-mj3xd.ondigitalocean.app/app/"
         server="https://shihjay.xyz/api/as"
       />
     </div>
