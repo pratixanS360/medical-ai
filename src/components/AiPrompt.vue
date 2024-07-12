@@ -56,8 +56,6 @@ const sendQuery = () => {
       <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
       <input type="submit" value="Send" @click="sendQuery" />
       <GNAP
-        @on-authorized="showAuth"
-        @jwt="showJWT"
         helper="blue large"
         location="https://nosh-app-mj3xd.ondigitalocean.app/app/chart/nosh_2c23641c-c1b4-4f5c-92e8-c749c54a34da"
         server="https://shihjay.xyz/api/as"
