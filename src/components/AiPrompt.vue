@@ -2,6 +2,7 @@
 import OpenAI from 'openai'
 import { ref } from 'vue'
 import { GNAP } from 'vue3-gnap'
+import SignSession from './ether-sign'
 import 'vue3-gnap/dist/style.css'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
@@ -29,6 +30,12 @@ const sendQuery = () => {
     input.value = ''
   })
 }
+const SignRecord = async () => {
+  const message = JSON.stringify(chatHistory.value)
+  SignSession(message).then((signature) => {
+    console.log(`Signature: ${signature}`)
+  })
+}
 </script>
 
 <template>
@@ -49,6 +56,7 @@ const sendQuery = () => {
         location="https://nosh-app-mj3xd.ondigitalocean.app/app/"
         server="https://shihjay.xyz/api/as"
       />
+      <button @click="SignRecord">Sign Record</button>
     </div>
   </div>
 </template>
