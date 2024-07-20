@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { GNAP } from 'vue3-gnap'
 import SignSession from './ether-sign'
 import 'vue3-gnap/dist/style.css'
+import VueMarkdown from 'vue-markdown-render'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 let isLoading = ref<boolean>(false)
@@ -51,7 +52,7 @@ const SignRecord = async () => {
     <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
       <div class="bubble">
         <cite>{{ x.role }}:</cite>
-        <p>{{ x.content }}</p>
+        <vue-markdown :source="x.content" />
       </div>
     </div>
   </div>

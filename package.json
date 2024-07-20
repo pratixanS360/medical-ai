@@ -19,6 +19,7 @@
     "openai": "^4.52.0",
     "pouchdb": "^9.0.0",
     "vue": "^3.4.29",
+    "vue-markdown-render": "^2.2.1",
     "vue-router": "^4.3.3",
     "vue3-gnap": "^1.0.4"
   },

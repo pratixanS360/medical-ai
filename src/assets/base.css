@@ -39,6 +39,17 @@
   font-size: 0.6em;
   text-transform: uppercase;
 }
+.bubble div {
+  padding: 1em 0;
+}
+.bubble div ul,
+.bubble div ol {
+  margin-left: 1.25em;
+}
+.bubble div strong {
+  font-weight: bold;
+}
+
 .bubble-row.assistant .bubble {
   background-color: #e5e5ea;
 }
