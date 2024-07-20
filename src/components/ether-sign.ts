@@ -1,8 +1,8 @@
-import * as ethers from 'ethers'
+import { ethers } from 'ethers'
 
 declare global {
   interface Window {
-    ethereum: ethers.providers.ExternalProvider & {
+    ethereum: ethers.Provider & {
       request: (args: { method: string }) => Promise<any>
     }
   }
@@ -10,13 +10,8 @@ declare global {
 
 async function SignSession(markdownContent: string): Promise<void> {
   let signer = null
-  let provider
+  const provider = new ethers.BrowserProvider(window.ethereum)
 
-  if (window.ethereum == null) {
-    provider = ethers.getDefaultProvider()
-  } else {
-    provider = new ethers.BrowserProvider(window.ethereum)
-  }
   signer = await provider.getSigner()
 
   // Request account access
