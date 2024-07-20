@@ -30,8 +30,16 @@ const sendQuery = () => {
     input.value = ''
   })
 }
+const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) => {
+  return json
+    .map((x) => {
+      return `${x.role}: ${x.content}\n\n`
+    })
+    .join('\n')
+}
 const SignRecord = async () => {
-  const message = JSON.stringify(chatHistory.value)
+  const message = convertJSONtoMarkdown(chatHistory.value)
+  console.log(`${message}`)
   SignSession(message).then((signature) => {
     console.log(`Signature: ${signature}`)
   })
