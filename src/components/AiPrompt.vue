@@ -8,6 +8,7 @@ import VueMarkdown from 'vue-markdown-render'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 let isLoading = ref<boolean>(false)
+let markdownContent = ''
 
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
@@ -34,7 +35,7 @@ const sendQuery = () => {
 const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) => {
   return json
     .map((x) => {
-      return `${x.role}: ${x.content}\n\n`
+      return `### ${x.role}:\n${x.content}\n\n`
     })
     .join('\n')
 }
@@ -44,6 +45,18 @@ const SignRecord = async () => {
   SignSession(message).then((signature) => {
     console.log(`Signature: ${signature}`)
   })
+}
+async function copyToClipboard() {
+  const message = convertJSONtoMarkdown(chatHistory.value)
+  try {
+    await navigator.clipboard.writeText(
+      '## Transcript\n' +
+        message +
+        '## Signature\n### Signed by:  _____________________  Date: ${new Date().toDateString()}'
+    )
+  } catch (err) {
+    console.error('Failed to copy: ', err)
+  }
 }
 </script>
 
@@ -55,17 +68,14 @@ const SignRecord = async () => {
         <vue-markdown :source="x.content" />
       </div>
     </div>
+    <vue-markdown :source="markdownContent" />
   </div>
   <div :class="'prompt ' + isLoading">
     <div class="inner">
       <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
       <input type="submit" value="Send" @click="sendQuery" />
-      <GNAP
-        helper="blue large"
-        location="https://nosh-app-mj3xd.ondigitalocean.app/app/"
-        server="https://shihjay.xyz/api/as"
-      />
-      <button @click="SignRecord">Sign Record</button>
+      <!-- <button @click="SignRecord">Sign Record</button> -->
+      <button @click="copyToClipboard">Copy Markdown</button>
     </div>
   </div>
 </template>
