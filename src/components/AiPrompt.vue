@@ -41,18 +41,19 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
 }
 const SignRecord = async () => {
   const message = convertJSONtoMarkdown(chatHistory.value)
-  console.log(`${message}`)
   SignSession(message).then((signature) => {
     console.log(`Signature: ${signature}`)
   })
 }
 async function copyToClipboard() {
   const message = convertJSONtoMarkdown(chatHistory.value)
+  const theDate = new Date().toDateString()
   try {
     await navigator.clipboard.writeText(
       '## Transcript\n' +
         message +
-        '## Signature\n### Signed by:  _____________________  Date: ${new Date().toDateString()}'
+        '## Signature\n### Signed by:  _____________________  Date: ' +
+        theDate
     )
   } catch (err) {
     console.error('Failed to copy: ', err)
