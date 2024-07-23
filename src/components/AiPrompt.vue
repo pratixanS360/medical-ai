@@ -10,7 +10,7 @@ const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const theDate = new Date().toDateString()
 let signatureContent = '### Signed by:  _____________________  Date: ' + theDate
 let isLoading = ref<boolean>(false)
-
+let isFileUploaded = ref<boolean>(false)
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -76,7 +76,7 @@ async function uploadFile() {
     }
     const data = await response.json()
     chatHistory.value = data.chatHistory
-    // You might want to display a success message here
+    isFileUploaded.value = true
   } catch (error) {
     console.error('Failed to upload file:', error)
     // Display an error message to the user
@@ -87,25 +87,26 @@ async function uploadFile() {
 <template>
   <div class="chat-area">
     <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
-      <div class="bubble">
+      <div class="bubble" v-if="x.role !== 'system'">
         <cite>{{ x.role }}:</cite>
         <vue-markdown :source="x.content" />
       </div>
-    </div>
-  </div>
-  <div :class="'prompt ' + isLoading">
-    <div class="inner">
-      <label for="upload-field" class="upload-button" title="upload timeline">Upload File</label>
-      <input type="file" id="upload-field" @change="uploadFile" />
-      <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
-      <input type="submit" value="Message ChatGPT" @click="sendQuery" />
-      <!-- <button @click="SignRecord">Sign Record</button> -->
     </div>
   </div>
   <div class="signature">
     <div class="inner">
       <vue-markdown :source="signatureContent" class="signature-line" />
       <button @click="copyToClipboard">Sign and Copy Markdown</button>
+    </div>
+  </div>
+  <div :class="'prompt ' + isLoading">
+    <div class="inner">
+      <label for="upload-field" class="upload-button" title="upload timeline">Upload File</label>
+      <div class="file-upload-flag" v-if="isFileUploaded" title="File Uploaded"></div>
+      <input type="file" id="upload-field" @change="uploadFile" />
+      <input type="text" placeholder="Message ChatGPT" id="query" @keyup.enter="sendQuery" />
+      <input type="submit" value="send" @click="sendQuery" />
+      <!-- <button @click="SignRecord">Sign Record</button> -->
     </div>
   </div>
 </template>

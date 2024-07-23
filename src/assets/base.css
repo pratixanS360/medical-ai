@@ -1,5 +1,5 @@
 .chat-area {
-  padding: 1em 0 80px;
+  padding: 1em 0 180px;
   position: relative;
   width: 100%;
   height: 100%;
@@ -40,7 +40,7 @@
   text-transform: uppercase;
 }
 .bubble div {
-  padding: 1em 0;
+  padding: 0 0 1em;
 }
 .bubble div ul,
 .bubble div ol {
@@ -48,6 +48,9 @@
 }
 .bubble div strong {
   font-weight: bold;
+}
+.bubble div p {
+  margin: 0 0 0.5rem;
 }
 
 .bubble-row.assistant .bubble {
@@ -66,15 +69,16 @@
   padding: 15px 0 75px;
   width: 100%;
   background-color: white;
-  box-shadow: 20px 5px 15px rgba(0, 0, 0, 0.4);
 }
 .signature {
   position: fixed;
-  bottom: 0;
+  bottom: 110px;
   left: 0;
   padding: 15px 0 15px;
   display: flex;
   width: 100%;
+  background: white;
+  box-shadow: 20px 5px 15px rgba(0, 0, 0, 0.4);
 }
 
 .prompt.true {
@@ -132,13 +136,17 @@
 .upload-button {
   overflow: hidden;
   text-indent: 100px;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   background-image: url("data:image/svg+xml,%3Csvg%20fill%3D%22%23000000%22%20version%3D%221.1%22%20id%3D%22Capa_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20%0A%09%20width%3D%22800px%22%20height%3D%22800px%22%20viewBox%3D%220%200%20950%20950%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cg%3E%0A%09%3Cpath%20d%3D%22M857.7%2C141.3c-30.1-30.1-65.1-53.5-104.3-69.4c-37.8-15.3-77.7-23.2-118.7-23.2c-40.9%2C0-80.9%2C7.7-118.7%2C22.9%0A%09%09c-39.1%2C15.8-74.2%2C38.9-104.3%2C68.8L73.1%2C478.3C49.3%2C501.9%2C30.9%2C529.4%2C18.3%2C560.2C6.2%2C589.9%2C0%2C621.3%2C0%2C653.6%0A%09%09C0%2C685.7%2C6.1%2C717%2C18.1%2C746.7c12.4%2C30.7%2C30.7%2C58.2%2C54.3%2C81.899c23.6%2C23.7%2C51.2%2C42%2C81.9%2C54.5c29.7%2C12.101%2C61.1%2C18.2%2C93.3%2C18.2%0A%09%09c32.2%2C0%2C63.6-6.1%2C93.3-18.1c30.8-12.5%2C58.399-30.8%2C82.1-54.4l269.101-268c17.3-17.2%2C30.6-37.3%2C39.699-59.7%0A%09%09c8.801-21.6%2C13.2-44.5%2C13.2-67.899c0-48.2-18.8-93.2-52.899-127c-34-34.2-79.2-53.1-127.301-53.3c-48.199-0.1-93.5%2C18.6-127.6%2C52.7%0A%09%09L269.6%2C473.3c-8.5%2C8.5-13.1%2C19.7-13.1%2C31.601c0%2C11.899%2C4.6%2C23.199%2C13.1%2C31.6l0.7%2C0.7c17.4%2C17.5%2C45.8%2C17.5%2C63.3%2C0.1l168-167.5%0A%09%09c35.1-34.8%2C92.1-35%2C127.199-0.399c16.9%2C16.8%2C26.101%2C39.3%2C26.101%2C63.399c0%2C24.3-9.4%2C47.101-26.5%2C64.101l-269%2C268%0A%09%09c-0.5%2C0.5-0.9%2C0.899-1.2%2C1.5c-29.7%2C28.899-68.9%2C44.699-110.5%2C44.5c-41.9-0.2-81.2-16.5-110.6-46c-14.7-15-26.1-32.5-34-52%0A%09%09C95.5%2C694%2C91.7%2C674%2C91.7%2C653.6c0-41.8%2C16.1-80.899%2C45.4-110.3c0.4-0.3%2C0.7-0.6%2C1.1-0.899l337.9-337.8c0.3-0.3%2C0.6-0.7%2C0.899-1.1%0A%09%09c21.4-21%2C46.3-37.4%2C74-48.5c27-10.8%2C55.4-16.2%2C84.601-16.2c29.199%2C0%2C57.699%2C5.6%2C84.6%2C16.4c27.9%2C11.3%2C52.9%2C27.8%2C74.3%2C49.1%0A%09%09c21.4%2C21.4%2C37.9%2C46.4%2C49.2%2C74.3c10.9%2C26.9%2C16.4%2C55.4%2C16.4%2C84.6c0%2C29.3-5.5%2C57.9-16.5%2C85c-11.301%2C28-28%2C53.2-49.5%2C74.8l-233.5%2C232.8%0A%09%09c-8.5%2C8.5-13.2%2C19.7-13.2%2C31.7s4.7%2C23.2%2C13.1%2C31.6l0.5%2C0.5c17.4%2C17.4%2C45.8%2C17.4%2C63.2%2C0L857.5%2C586.9%0A%09%09C887.601%2C556.8%2C911%2C521.7%2C926.9%2C482.6C942.3%2C444.8%2C950%2C404.9%2C950%2C363.9c0-40.9-7.8-80.8-23.1-118.5%0A%09%09C911.101%2C206.3%2C887.8%2C171.3%2C857.7%2C141.3z%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E");
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: 70%;
   background-position: center;
   cursor: pointer;
+  background-color: #ccc;
+  border-radius: 50%;
+  padding: 10px;
+  margin-right: 10px;
 }
 #upload-field {
   display: none;
@@ -152,6 +160,20 @@
   font-size: 14px;
   font-family: sans-serif;
   cursor: pointer;
+}
+.file-upload-flag {
+  width: 36px;
+  height: 36px;
+  background-color: #0dff00;
+  color: #fff;
+  border-radius: 50%;
+  display: block;
+  margin-right: 10px;
+}
+.signature-line {
+  height: 36px;
+  display: flex;
+  align-items: flex-end;
 }
 .signature-line h2,
 .signature-line h3 {
