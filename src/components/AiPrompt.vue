@@ -7,8 +7,9 @@ import 'vue3-gnap/dist/style.css'
 import VueMarkdown from 'vue-markdown-render'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
+const theDate = new Date().toDateString()
+let signatureContent = '### Signed by:  _____________________  Date: ' + theDate
 let isLoading = ref<boolean>(false)
-let markdownContent = ''
 
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
@@ -23,6 +24,7 @@ const postData = async (url = '', data = {}) => {
 const sendQuery = () => {
   isLoading.value = true
   const input = document.getElementById('query') as HTMLInputElement
+
   postData('/.netlify/functions/ai-chat', {
     chatHistory: chatHistory.value,
     newValue: input.value
@@ -47,16 +49,37 @@ const SignRecord = async () => {
 }
 async function copyToClipboard() {
   const message = convertJSONtoMarkdown(chatHistory.value)
-  const theDate = new Date().toDateString()
   try {
-    await navigator.clipboard.writeText(
-      '## Transcript\n' +
-        message +
-        '## Signature\n### Signed by:  _____________________  Date: ' +
-        theDate
-    )
+    await navigator.clipboard.writeText('## Transcript\n' + message + signatureContent)
   } catch (err) {
     console.error('Failed to copy: ', err)
+  }
+}
+async function uploadFile() {
+  const fileInput = document.getElementById('upload-field') as HTMLInputElement
+  if (!fileInput.files || fileInput.files.length === 0) {
+    console.error('No file selected')
+    return
+  }
+  const file = fileInput.files[0]
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('chatHistory', JSON.stringify(chatHistory.value))
+
+  try {
+    const response = await fetch('/.netlify/functions/ai-chat', {
+      method: 'POST',
+      body: formData
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const data = await response.json()
+    chatHistory.value = data.chatHistory
+    // You might want to display a success message here
+  } catch (error) {
+    console.error('Failed to upload file:', error)
+    // Display an error message to the user
   }
 }
 </script>
@@ -69,14 +92,20 @@ async function copyToClipboard() {
         <vue-markdown :source="x.content" />
       </div>
     </div>
-    <vue-markdown :source="markdownContent" />
   </div>
   <div :class="'prompt ' + isLoading">
     <div class="inner">
+      <label for="upload-field" class="upload-button" title="upload timeline">Upload File</label>
+      <input type="file" id="upload-field" @change="uploadFile" />
       <input type="text" placeholder="query" id="query" @keyup.enter="sendQuery" />
-      <input type="submit" value="Send" @click="sendQuery" />
+      <input type="submit" value="Message ChatGPT" @click="sendQuery" />
       <!-- <button @click="SignRecord">Sign Record</button> -->
-      <button @click="copyToClipboard">Copy Markdown</button>
+    </div>
+  </div>
+  <div class="signature">
+    <div class="inner">
+      <vue-markdown :source="signatureContent" class="signature-line" />
+      <button @click="copyToClipboard">Sign and Copy Markdown</button>
     </div>
   </div>
 </template>

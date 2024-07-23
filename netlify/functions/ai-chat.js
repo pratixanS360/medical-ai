@@ -1,39 +1,102 @@
-/* eslint-disable no-undef */
-
+import { Buffer } from 'buffer'
 import OpenAI from 'openai'
+import { extname } from 'path'
 
 const openai = new OpenAI({
   organization: process.env.VITE_ORG_ID,
   project: process.env.VITE_PROJECT_ID,
   apiKey: process.env.VITE_OPENAI_API_KEY
 })
+
+const parseMultipartForm = (event) => {
+  const boundary = event.headers['content-type'].split('boundary=')[1]
+  const parts = Buffer.from(event.body, 'base64').toString().split(`--${boundary}`)
+  const result = { file: null, chatHistory: null }
+
+  parts.forEach((part) => {
+    if (part.includes('filename=')) {
+      const filenameMatch = part.match(/filename="(.+)"/)
+      if (filenameMatch) {
+        const filename = filenameMatch[1]
+        const content = part.split('\r\n\r\n').slice(1).join('\r\n\r\n').trim()
+        result.file = { filename, content }
+      }
+    } else if (part.includes('name="chatHistory"')) {
+      const content = part.split('\r\n\r\n')[1].trim()
+      result.chatHistory = JSON.parse(content)
+    }
+  })
+
+  return result
+}
+
 const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' }
   }
-  if (event.headers.origin !== process.env.VITE_APP_URL) {
-    return { statusCode: 500, body: 'Invalid Request' }
-  }
-  let { chatHistory, newValue } = JSON.parse(event.body)
-  chatHistory.push({ role: 'user', content: newValue })
-  const params = {
-    messages: chatHistory,
-    model: 'gpt-3.5-turbo'
-  }
 
-  try {
-    const response = await openai.chat.completions.create(params)
-    chatHistory.push(response.choices[0].message)
-    return {
-      statusCode: 200,
-      body: JSON.stringify(chatHistory)
+  if (
+    event.headers['content-type'] &&
+    event.headers['content-type'].includes('multipart/form-data')
+  ) {
+    const formData = parseMultipartForm(event)
+
+    if (!formData || !formData.file) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'No file found in form data' })
+      }
     }
-  } catch (error) {
-    console.log(error)
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Internal Server Error' })
+
+    if (extname(formData.file.filename) === '.md') {
+      // Append file content to chatHistory
+      const updatedChatHistory = formData.chatHistory || []
+      updatedChatHistory.push({
+        role: 'system',
+        content: `${formData.file.content}`
+      })
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message: 'Markdown file processed successfully',
+          chatHistory: updatedChatHistory
+        })
+      }
+    } else {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'Invalid file type. Only .md files are accepted.' })
+      }
+    }
+  } else {
+    // Handle other POST requests (e.g., chat completions)
+    try {
+      let { chatHistory, newValue } = JSON.parse(event.body)
+
+      chatHistory.push({
+        role: 'user',
+        content: newValue
+      })
+      const params = {
+        messages: chatHistory,
+        model: 'gpt-4-turbo'
+      }
+
+      const response = await openai.chat.completions.create(params)
+      chatHistory.push(response.choices[0].message)
+      return {
+        statusCode: 200,
+        body: JSON.stringify(chatHistory)
+      }
+    } catch (error) {
+      console.log('Error:', error)
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Internal Server Error', details: error.message })
+      }
     }
   }
 }
+
 export { handler }
