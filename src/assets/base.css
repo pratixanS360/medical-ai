@@ -52,7 +52,12 @@
 .bubble div p {
   margin: 0 0 0.5rem;
 }
-
+.bubble textarea {
+  border-radius: none;
+  width: 100%;
+  padding: 0.5em;
+  color: black;
+}
 .bubble-row.assistant .bubble {
   background-color: #e5e5ea;
 }
@@ -81,28 +86,8 @@
   box-shadow: 20px 5px 15px rgba(0, 0, 0, 0.4);
 }
 
-.prompt.true {
-  background: linear-gradient(
-    45deg,
-    #e5e5ea 25%,
-    transparent 25%,
-    transparent 50%,
-    #e5e5ea 50%,
-    #e5e5ea 75%,
-    transparent 75%,
-    transparent
-  );
-  background-size: 40px 40px;
-  animation: loading 2s linear infinite;
-
-  @keyframes loading {
-    0% {
-      background-position: 0 0;
-    }
-    100% {
-      background-position: 40px 0;
-    }
-  }
+.prompt.true * {
+  opacity: 0.5;
 }
 .prompt .inner,
 .signature .inner {
@@ -133,7 +118,9 @@
   flex-basis: 90%;
   margin-right: 10px;
 }
-.upload-button {
+
+.upload-button,
+.edit-button {
   overflow: hidden;
   text-indent: 100px;
   width: 36px;
@@ -147,6 +134,19 @@
   border-radius: 50%;
   padding: 10px;
   margin-right: 10px;
+  min-inline-size: 0;
+}
+.edit-button {
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px;
+  width: 12px;
+  height: 12px;
+  background-color: #ccc;
+  background-image: url("data:image/svg+xml,%3Csvg%20class%3D%22feather%20feather-edit%22%20fill%3D%22none%22%20height%3D%2224%22%20stroke%3D%22currentColor%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20viewBox%3D%220%200%2024%2024%22%20width%3D%2224%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M11%204H4a2%202%200%200%200-2%202v14a2%202%200%200%200%202%202h14a2%202%200%200%200%202-2v-7%22%2F%3E%3Cpath%20d%3D%22M18.5%202.5a2.121%202.121%200%200%201%203%203L12%2015l-4%201%201-4%209.5-9.5z%22%2F%3E%3C%2Fsvg%3E");
 }
 #upload-field {
   display: none;
@@ -162,13 +162,25 @@
   cursor: pointer;
 }
 .file-upload-flag {
-  width: 36px;
-  height: 36px;
-  background-color: #0dff00;
+  background-color: #007aff;
   color: #fff;
-  border-radius: 50%;
+  border-radius: 3px;
   display: block;
-  margin-right: 10px;
+  display: inline-block;
+  padding: 0.5em 1em;
+  margin: 1em 0 0;
+  float: right;
+}
+.file-upload-flag p {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.1;
+}
+.file-name {
+  font-weight: bold;
+}
+.file-size {
+  font-size: 8px;
 }
 .signature-line {
   height: 36px;
@@ -178,4 +190,15 @@
 .signature-line h2,
 .signature-line h3 {
   font-size: 12px;
+}
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin: 0;
+  position: fixed;
+  bottom: 15px;
+  text-align: center;
+}
+.error-message p {
+  font-weight: bold;
 }

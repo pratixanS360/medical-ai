@@ -8,9 +8,25 @@ import VueMarkdown from 'vue-markdown-render'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const theDate = new Date().toDateString()
+let editBox = ref<number[]>([])
+let fileinfo = {
+  name: '',
+  size: 0
+}
 let signatureContent = '### Signed by:  _____________________  Date: ' + theDate
+let errorMessage = ref<string>('')
 let isLoading = ref<boolean>(false)
 let isFileUploaded = ref<boolean>(false)
+let isError = ref<boolean>(false)
+
+const writeError = (message: string) => {
+  errorMessage.value = message
+  isError.value = true
+  setTimeout(() => {
+    isError.value = false
+  }, 5000)
+}
+
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -19,8 +35,16 @@ const postData = async (url = '', data = {}) => {
     },
     body: JSON.stringify(data)
   })
-  return response.json()
+
+  try {
+    return await response.json()
+  } catch (error) {
+    writeError('Failed to parse JSON')
+    console.error('Failed to parse JSON:', error)
+    return null
+  }
 }
+
 const sendQuery = () => {
   isLoading.value = true
   const input = document.getElementById('query') as HTMLInputElement
@@ -34,6 +58,7 @@ const sendQuery = () => {
     input.value = ''
   })
 }
+
 const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) => {
   return json
     .map((x) => {
@@ -41,12 +66,14 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
     })
     .join('\n')
 }
+
 const SignRecord = async () => {
   const message = convertJSONtoMarkdown(chatHistory.value)
   SignSession(message).then((signature) => {
     console.log(`Signature: ${signature}`)
   })
 }
+
 async function copyToClipboard() {
   const message = convertJSONtoMarkdown(chatHistory.value)
   try {
@@ -55,6 +82,7 @@ async function copyToClipboard() {
     console.error('Failed to copy: ', err)
   }
 }
+
 async function uploadFile() {
   const fileInput = document.getElementById('upload-field') as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
@@ -76,20 +104,48 @@ async function uploadFile() {
     }
     const data = await response.json()
     chatHistory.value = data.chatHistory
+    fileinfo = file
     isFileUploaded.value = true
   } catch (error) {
     console.error('Failed to upload file:', error)
     // Display an error message to the user
   }
 }
+const editMessage = (idx: number) => {
+  editBox.value.push(idx)
+  return
+}
+const saveMessage = (idx: number, content: string) => {
+  chatHistory.value[idx].content = content
+  editBox.value.splice(editBox.value.indexOf(idx), 1)
+  console.log('Save message:', editBox)
+  return
+}
 </script>
 
 <template>
+  <div class="file-upload-flag" v-if="isFileUploaded" title="File Uploaded">
+    <p>File Uploaded:</p>
+    <p class="file-name">{{ fileinfo.name }}</p>
+    <p class="file-size">{{ fileinfo.size }}k</p>
+  </div>
   <div class="chat-area">
     <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
       <div class="bubble" v-if="x.role !== 'system'">
+        <button
+          class="edit-button"
+          v-if="!editBox.includes(idx)"
+          @click="editMessage(idx)"
+          title="edit"
+        >
+          Edit
+        </button>
         <cite>{{ x.role }}:</cite>
         <vue-markdown :source="x.content" />
+        <div v-if="editBox.includes(idx)">
+          <textarea v-model="x.content" rows="10"></textarea>
+          <button @click="saveMessage(idx, x.content as string)">Save</button>
+        </div>
       </div>
     </div>
   </div>
@@ -101,12 +157,16 @@ async function uploadFile() {
   </div>
   <div :class="'prompt ' + isLoading">
     <div class="inner">
-      <label for="upload-field" class="upload-button" title="upload timeline">Upload File</label>
-      <div class="file-upload-flag" v-if="isFileUploaded" title="File Uploaded"></div>
+      <label for="upload-field" class="upload-button" title="upload timeline" v-if="!isFileUploaded"
+        >Upload File</label
+      >
       <input type="file" id="upload-field" @change="uploadFile" />
       <input type="text" placeholder="Message ChatGPT" id="query" @keyup.enter="sendQuery" />
       <input type="submit" value="send" @click="sendQuery" />
       <!-- <button @click="SignRecord">Sign Record</button> -->
     </div>
+  </div>
+  <div class="error-message" v-if="isError">
+    <p>{{ errorMessage }}</p>
   </div>
 </template>

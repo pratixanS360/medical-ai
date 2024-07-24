@@ -7,7 +7,7 @@ const openai = new OpenAI({
   project: process.env.VITE_PROJECT_ID,
   apiKey: process.env.VITE_OPENAI_API_KEY
 })
-
+const chatHistory = []
 const parseMultipartForm = (event) => {
   const boundary = event.headers['content-type'].split('boundary=')[1]
   const parts = Buffer.from(event.body, 'base64').toString().split(`--${boundary}`)
@@ -60,7 +60,8 @@ const handler = async (event) => {
         statusCode: 200,
         body: JSON.stringify({
           message: 'Markdown file processed successfully',
-          chatHistory: updatedChatHistory
+          chatHistory: updatedChatHistory,
+          filename: formData.file.filename
         })
       }
     } else {
@@ -85,15 +86,19 @@ const handler = async (event) => {
 
       const response = await openai.chat.completions.create(params)
       chatHistory.push(response.choices[0].message)
+
       return {
         statusCode: 200,
         body: JSON.stringify(chatHistory)
       }
     } catch (error) {
-      console.log('Error:', error)
+      chatHistory.push({
+        role: 'assistant',
+        content: 'Assistant timed out. Consider breaking up your prompt into smaller pieces.'
+      })
       return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Internal Server Error', details: error.message })
+        statusCode: 200,
+        body: JSON.stringify(chatHistory)
       }
     }
   }
