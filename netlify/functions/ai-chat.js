@@ -7,7 +7,9 @@ const openai = new OpenAI({
   project: process.env.VITE_PROJECT_ID,
   apiKey: process.env.VITE_OPENAI_API_KEY
 })
+
 const chatHistory = []
+
 const parseMultipartForm = (event) => {
   const boundary = event.headers['content-type'].split('boundary=')[1]
   const parts = Buffer.from(event.body, 'base64').toString().split(`--${boundary}`)

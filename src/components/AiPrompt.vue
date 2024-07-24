@@ -1,7 +1,6 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
 import { ref } from 'vue'
-import { GNAP } from 'vue3-gnap'
 import SignSession from './ether-sign'
 import 'vue3-gnap/dist/style.css'
 import VueMarkdown from 'vue-markdown-render'
@@ -39,8 +38,7 @@ const postData = async (url = '', data = {}) => {
   try {
     return await response.json()
   } catch (error) {
-    writeError('Failed to parse JSON')
-    console.error('Failed to parse JSON:', error)
+    writeError('Failed to parse JSON. Probably a timeout.')
     return null
   }
 }
@@ -67,19 +65,12 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
     .join('\n')
 }
 
-const SignRecord = async () => {
-  const message = convertJSONtoMarkdown(chatHistory.value)
-  SignSession(message).then((signature) => {
-    console.log(`Signature: ${signature}`)
-  })
-}
-
 async function copyToClipboard() {
   const message = convertJSONtoMarkdown(chatHistory.value)
   try {
     await navigator.clipboard.writeText('## Transcript\n' + message + signatureContent)
   } catch (err) {
-    console.error('Failed to copy: ', err)
+    writeError('Failed to copy to clipboard')
   }
 }
 
@@ -107,8 +98,7 @@ async function uploadFile() {
     fileinfo = file
     isFileUploaded.value = true
   } catch (error) {
-    console.error('Failed to upload file:', error)
-    // Display an error message to the user
+    writeError('Failed to upload file')
   }
 }
 const editMessage = (idx: number) => {
@@ -118,7 +108,6 @@ const editMessage = (idx: number) => {
 const saveMessage = (idx: number, content: string) => {
   chatHistory.value[idx].content = content
   editBox.value.splice(editBox.value.indexOf(idx), 1)
-  console.log('Save message:', editBox)
   return
 }
 </script>
@@ -141,10 +130,10 @@ const saveMessage = (idx: number, content: string) => {
           Edit
         </button>
         <cite>{{ x.role }}:</cite>
-        <vue-markdown :source="x.content" />
+        <vue-markdown :source="x.content" v-if="!editBox.includes(idx)" />
         <div v-if="editBox.includes(idx)">
           <textarea v-model="x.content" rows="10"></textarea>
-          <button @click="saveMessage(idx, x.content as string)">Save</button>
+          <button class="save-button" @click="saveMessage(idx, x.content as string)">Save</button>
         </div>
       </div>
     </div>
