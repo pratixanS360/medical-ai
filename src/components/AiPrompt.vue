@@ -74,9 +74,9 @@ const sendQuery = () => {
     isLoading.value = false
     chatHistory.value = data
     formState.currentQuery = ''
-    const height = document.body.scrollHeight
+
     setTimeout(() => {
-      window.scrollTo(0, height)
+      window.scrollTo(0, document.body.scrollHeight)
     }, 100)
   })
 }
@@ -86,7 +86,9 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
     '##### Transcript\n\n\n' +
     json
       .map((x) => {
-        return `###### ${x.role}:\n${x.content}\n\n`
+        if (x.role !== 'system') {
+          return `###### ${x.role}:\n${x.content}\n\n`
+        }
       })
       .join('\n') +
     '\n\n\n##### ' +
@@ -96,14 +98,13 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
 
 async function copyToClipboard() {
   isPreview.value = true
-  /*
+
   const message = convertJSONtoMarkdown(chatHistory.value)
   try {
-    await navigator.clipboard.writeText('## Transcript\n' + message + signatureContent)
+    await navigator.clipboard.writeText(message)
   } catch (err) {
     writeError('Failed to copy to clipboard')
   }
-    */
 }
 
 async function uploadFile(e: Event) {
@@ -134,6 +135,9 @@ async function uploadFile(e: Event) {
 }
 const closePopup = () => {
   isPreview.value = false
+}
+const openPopup = () => {
+  isPreview.value = true
 }
 const editMessage = (idx: number) => {
   editBox.value.push(idx)
@@ -199,7 +203,7 @@ const saveMessage = (idx: number, content: string) => {
     <div class="signature">
       <div class="inner">
         <q-btn
-          @click="copyToClipboard"
+          @click="openPopup"
           label="Sign and Copy Markdown"
           size="sm"
           color="secondary"
@@ -228,7 +232,7 @@ const saveMessage = (idx: number, content: string) => {
       </q-card-section>
       <q-card-actions align="right">
         <q-btn label="Cancel" solid color="warning" @click="closePopup"></q-btn>
-        <q-btn :label="signatureContent()" solid color="primary" @click="closePopup"></q-btn>
+        <q-btn :label="signatureContent()" solid color="primary" @click="copyToClipboard"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
