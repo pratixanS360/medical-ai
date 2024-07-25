@@ -3,19 +3,29 @@ import OpenAI from 'openai'
 import { ref } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import { reactive } from 'vue'
-import { QBtn, QFile, QIcon, QChatMessage, QInput } from 'quasar'
+import {
+  QBtn,
+  QFile,
+  QIcon,
+  QChatMessage,
+  QInput,
+  QDialog,
+  QCard,
+  QCardSection,
+  QCardActions
+} from 'quasar'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const theDate = new Date().toDateString()
 let editBox = ref<number[]>([])
-let signatureContent = '### Signed by:  _____________________  Date: ' + theDate
+let signatureContent = '##### Signed by: [NAME] Date: ' + theDate
 let errorMessage = ref<string>('')
 let isLoading = ref<boolean>(false)
-let isFileUploaded = ref<boolean>(false)
 let isError = ref<boolean>(false)
+let isPreview = ref<boolean>(false)
 
 type QueryFormState = {
-  currentQuery: string
+  currentQuery: string | null
 }
 type FileFormState = {
   file: File | null
@@ -24,7 +34,7 @@ type ChatFormState = {
   content: string
 }
 const formState = reactive(<QueryFormState>{
-  currentQuery: ''
+  currentQuery: null
 })
 const fileFormState = reactive(<FileFormState>{
   file: null
@@ -74,20 +84,28 @@ const sendQuery = () => {
 }
 
 const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) => {
-  return json
-    .map((x) => {
-      return `### ${x.role}:\n${x.content}\n\n`
-    })
-    .join('\n')
+  return (
+    '##### Transcript\n\n\n' +
+    json
+      .map((x) => {
+        return `###### ${x.role}:\n${x.content}\n\n`
+      })
+      .join('\n') +
+    '\n\n\n' +
+    signatureContent
+  )
 }
 
 async function copyToClipboard() {
+  isPreview.value = true
+  /*
   const message = convertJSONtoMarkdown(chatHistory.value)
   try {
     await navigator.clipboard.writeText('## Transcript\n' + message + signatureContent)
   } catch (err) {
     writeError('Failed to copy to clipboard')
   }
+    */
 }
 
 async function uploadFile(e: Event) {
@@ -112,10 +130,12 @@ async function uploadFile(e: Event) {
     }
     const data = await response.json()
     chatHistory.value = data.chatHistory
-    isFileUploaded.value = true
   } catch (error) {
     writeError('Failed to upload file')
   }
+}
+const closePopup = () => {
+  isPreview.value = false
 }
 const editMessage = (idx: number) => {
   editBox.value.push(idx)
@@ -180,7 +200,6 @@ const saveMessage = (idx: number, content: string) => {
   <div class="bottom-toolbar">
     <div class="signature">
       <div class="inner">
-        <vue-markdown :source="signatureContent" class="signature-line" />
         <q-btn
           @click="copyToClipboard"
           label="Sign and Copy Markdown"
@@ -204,4 +223,16 @@ const saveMessage = (idx: number, content: string) => {
       <p>{{ errorMessage }}</p>
     </div>
   </div>
+  <q-dialog v-model="isPreview">
+    <q-card>
+      <q-card-section class="q-pt-none">
+        <vue-markdown :source="convertJSONtoMarkdown(chatHistory)" />
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Signed By [NAME] on [DATE]" color="primary" @click="closePopup"></q-btn>
+        <q-btn flat label="Cancel" color="error" @click="closePopup"></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
