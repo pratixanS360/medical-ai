@@ -4,14 +4,14 @@ import { ref } from 'vue'
 import SignSession from './ether-sign'
 import 'vue3-gnap/dist/style.css'
 import VueMarkdown from 'vue-markdown-render'
-
+interface FileInfo {
+  name: string
+  size: number
+}
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const theDate = new Date().toDateString()
 let editBox = ref<number[]>([])
-let fileinfo = {
-  name: '',
-  size: 0
-}
+let fileinfo = ref<FileInfo[]>([])
 let signatureContent = '### Signed by:  _____________________  Date: ' + theDate
 let errorMessage = ref<string>('')
 let isLoading = ref<boolean>(false)
@@ -95,7 +95,7 @@ async function uploadFile() {
     }
     const data = await response.json()
     chatHistory.value = data.chatHistory
-    fileinfo = file
+    fileinfo.value.push(file)
     isFileUploaded.value = true
   } catch (error) {
     writeError('Failed to upload file')
@@ -115,8 +115,10 @@ const saveMessage = (idx: number, content: string) => {
 <template>
   <div class="file-upload-flag" v-if="isFileUploaded" title="File Uploaded">
     <p>File Uploaded:</p>
-    <p class="file-name">{{ fileinfo.name }}</p>
-    <p class="file-size">{{ fileinfo.size }}k</p>
+    <div v-for="file in fileinfo" :key="file.name">
+      <p class="file-name">{{ file.name }}</p>
+      <p class="file-size">{{ file.size }}k</p>
+    </div>
   </div>
   <div class="chat-area">
     <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
@@ -146,13 +148,10 @@ const saveMessage = (idx: number, content: string) => {
   </div>
   <div :class="'prompt ' + isLoading">
     <div class="inner">
-      <label for="upload-field" class="upload-button" title="upload timeline" v-if="!isFileUploaded"
-        >Upload File</label
-      >
+      <label for="upload-field" class="upload-button" title="upload timeline">Upload File</label>
       <input type="file" id="upload-field" @change="uploadFile" />
       <input type="text" placeholder="Message ChatGPT" id="query" @keyup.enter="sendQuery" />
-      <input type="submit" value="send" @click="sendQuery" />
-      <!-- <button @click="SignRecord">Sign Record</button> -->
+      <input type="submit" value="Send" @click="sendQuery" />
     </div>
   </div>
   <div class="error-message" v-if="isError">
