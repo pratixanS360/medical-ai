@@ -16,9 +16,8 @@ import {
 } from 'quasar'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
-const theDate = new Date().toDateString()
 let editBox = ref<number[]>([])
-let signatureContent = '##### Signed by: [NAME] Date: ' + theDate
+let Username = ref<string>('Santa Claus')
 let errorMessage = ref<string>('')
 let isLoading = ref<boolean>(false)
 let isError = ref<boolean>(false)
@@ -30,18 +29,17 @@ type QueryFormState = {
 type FileFormState = {
   file: File | null
 }
-type ChatFormState = {
-  content: string
-}
 const formState = reactive(<QueryFormState>{
   currentQuery: null
 })
 const fileFormState = reactive(<FileFormState>{
   file: null
 })
-const chatFormState = reactive(<ChatFormState>{
-  content: ''
-})
+
+const signatureContent = () => {
+  return `Signed by: ${Username.value} Date: ${new Date().toDateString()}`
+}
+
 const writeError = (message: string) => {
   errorMessage.value = message
   isError.value = true
@@ -91,8 +89,8 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
         return `###### ${x.role}:\n${x.content}\n\n`
       })
       .join('\n') +
-    '\n\n\n' +
-    signatureContent
+    '\n\n\n##### ' +
+    signatureContent()
   )
 }
 
@@ -225,13 +223,12 @@ const saveMessage = (idx: number, content: string) => {
   </div>
   <q-dialog v-model="isPreview">
     <q-card>
-      <q-card-section class="q-pt-none">
+      <q-card-section>
         <vue-markdown :source="convertJSONtoMarkdown(chatHistory)" />
       </q-card-section>
-
       <q-card-actions align="right">
-        <q-btn flat label="Signed By [NAME] on [DATE]" color="primary" @click="closePopup"></q-btn>
-        <q-btn flat label="Cancel" color="error" @click="closePopup"></q-btn>
+        <q-btn label="Cancel" solid color="warning" @click="closePopup"></q-btn>
+        <q-btn :label="signatureContent()" solid color="primary" @click="closePopup"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>

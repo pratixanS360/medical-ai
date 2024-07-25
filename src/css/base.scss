@@ -40,11 +40,8 @@
   margin: 0 auto;
   position: relative;
 }
-.signature .inner button {
-  margin: 0;
-}
 .signature .inner {
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 @media (min-width: 768px) {
   .prompt .inner,
