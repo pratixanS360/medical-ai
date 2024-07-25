@@ -12,7 +12,8 @@ import {
   QDialog,
   QCard,
   QCardSection,
-  QCardActions
+  QCardActions,
+  is
 } from 'quasar'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
@@ -35,18 +36,6 @@ const formState = reactive(<QueryFormState>{
 const fileFormState = reactive(<FileFormState>{
   file: null
 })
-
-const signatureContent = () => {
-  return `Signed by: ${Username.value} Date: ${new Date().toDateString()}`
-}
-
-const writeError = (message: string) => {
-  errorMessage.value = message
-  isError.value = true
-  setTimeout(() => {
-    isError.value = false
-  }, 5000)
-}
 
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
@@ -74,7 +63,6 @@ const sendQuery = () => {
     isLoading.value = false
     chatHistory.value = data
     formState.currentQuery = ''
-
     setTimeout(() => {
       window.scrollTo(0, document.body.scrollHeight)
     }, 100)
@@ -97,11 +85,11 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
 }
 
 async function copyToClipboard() {
-  isPreview.value = true
-
+  closePopup()
   const message = convertJSONtoMarkdown(chatHistory.value)
   try {
     await navigator.clipboard.writeText(message)
+    writeError('Copied to clipboard')
   } catch (err) {
     writeError('Failed to copy to clipboard')
   }
@@ -133,16 +121,32 @@ async function uploadFile(e: Event) {
     writeError('Failed to upload file')
   }
 }
+
+const signatureContent = () => {
+  return `Signed by: ${Username.value} Date: ${new Date().toDateString()}`
+}
+
+const writeError = (message: string) => {
+  errorMessage.value = message
+  isError.value = true
+  setTimeout(() => {
+    isError.value = false
+  }, 5000)
+}
+
 const closePopup = () => {
   isPreview.value = false
 }
+
 const openPopup = () => {
   isPreview.value = true
 }
+
 const editMessage = (idx: number) => {
   editBox.value.push(idx)
   return
 }
+
 const saveMessage = (idx: number, content: string) => {
   chatHistory.value[idx].content = content
   editBox.value.splice(editBox.value.indexOf(idx), 1)
@@ -169,12 +173,11 @@ const saveMessage = (idx: number, content: string) => {
           <q-btn
             @click="editMessage(idx)"
             icon="edit"
-            rounded
             dense
+            flat
             :class="['edit-button', x.role.toString()]"
             v-if="!editBox.includes(idx)"
             size="sm"
-            color="primary"
             class="edit-button"
           ></q-btn>
           <vue-markdown :source="x.content" />
@@ -221,8 +224,8 @@ const saveMessage = (idx: number, content: string) => {
         <q-btn color="primary" label="Send" @click="sendQuery" :loading="isLoading" size="sm" />
       </div>
     </div>
-    <div class="error-message" v-if="isError">
-      <p>{{ errorMessage }}</p>
+    <div class="error-message">
+      <p v-if="isError">{{ errorMessage }}</p>
     </div>
   </div>
   <q-dialog v-model="isPreview">

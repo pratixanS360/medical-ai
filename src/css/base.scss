@@ -34,7 +34,8 @@
 }
 
 .prompt .inner,
-.signature .inner {
+.signature .inner,
+.error-message {
   width: 90%;
   max-width: 800px;
   margin: 0 auto;
@@ -69,10 +70,7 @@
 .error-message {
   color: red;
   font-size: 12px;
-  margin: 0;
-  position: fixed;
-  bottom: 15px;
-  text-align: center;
+  height: 30px;
 }
 .error-message p {
   font-weight: bold;
