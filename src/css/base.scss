@@ -1,0 +1,82 @@
+.chat-area {
+  padding: 1em 0 220px;
+  .q-message-text-content {
+    textarea {
+      width: 100%;
+    }
+  }
+}
+.bottom-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+.prompt {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 15px 0 75px;
+  width: 100%;
+  background-color: white;
+  &.true * {
+    opacity: 0.5;
+  }
+  .q-input {
+    width: 100%;
+  }
+}
+.signature {
+  padding: 15px 0 15px;
+  display: flex;
+  width: 100%;
+  background: white;
+  box-shadow: 20px 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.prompt .inner,
+.signature .inner {
+  width: 90%;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+.signature .inner button {
+  margin: 0;
+}
+.signature .inner {
+  justify-content: space-between;
+}
+@media (min-width: 768px) {
+  .prompt .inner,
+  .signature .inner {
+    display: flex;
+  }
+}
+
+.file-upload-area {
+  display: flex;
+  justify-content: flex-end;
+}
+.signature-line {
+  height: 36px;
+  display: flex;
+  align-items: flex-end;
+}
+.signature-line h2,
+.signature-line h3 {
+  font-size: 12px;
+}
+.edit-button {
+  float: right;
+}
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin: 0;
+  position: fixed;
+  bottom: 15px;
+  text-align: center;
+}
+.error-message p {
+  font-weight: bold;
+}

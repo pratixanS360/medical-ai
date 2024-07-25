@@ -1,23 +1,37 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
 import { ref } from 'vue'
-import SignSession from './ether-sign'
-import 'vue3-gnap/dist/style.css'
 import VueMarkdown from 'vue-markdown-render'
-interface FileInfo {
-  name: string
-  size: number
-}
+import { reactive } from 'vue'
+import { QBtn, QFile, QIcon, QChatMessage, QInput } from 'quasar'
+
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const theDate = new Date().toDateString()
 let editBox = ref<number[]>([])
-let fileinfo = ref<FileInfo[]>([])
 let signatureContent = '### Signed by:  _____________________  Date: ' + theDate
 let errorMessage = ref<string>('')
 let isLoading = ref<boolean>(false)
 let isFileUploaded = ref<boolean>(false)
 let isError = ref<boolean>(false)
 
+type QueryFormState = {
+  currentQuery: string
+}
+type FileFormState = {
+  file: File | null
+}
+type ChatFormState = {
+  content: string
+}
+const formState = reactive(<QueryFormState>{
+  currentQuery: ''
+})
+const fileFormState = reactive(<FileFormState>{
+  file: null
+})
+const chatFormState = reactive(<ChatFormState>{
+  content: ''
+})
 const writeError = (message: string) => {
   errorMessage.value = message
   isError.value = true
@@ -45,15 +59,17 @@ const postData = async (url = '', data = {}) => {
 
 const sendQuery = () => {
   isLoading.value = true
-  const input = document.getElementById('query') as HTMLInputElement
-
   postData('/.netlify/functions/ai-chat', {
     chatHistory: chatHistory.value,
-    newValue: input.value
+    newValue: formState.currentQuery
   }).then((data) => {
     isLoading.value = false
     chatHistory.value = data
-    input.value = ''
+    formState.currentQuery = ''
+    const height = document.body.scrollHeight
+    setTimeout(() => {
+      window.scrollTo(0, height)
+    }, 100)
   })
 }
 
@@ -74,10 +90,10 @@ async function copyToClipboard() {
   }
 }
 
-async function uploadFile() {
-  const fileInput = document.getElementById('upload-field') as HTMLInputElement
+async function uploadFile(e: Event) {
+  let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
-    console.error('No file selected')
+    writeError('No file selected')
     return
   }
   const file = fileInput.files[0]
@@ -90,12 +106,12 @@ async function uploadFile() {
       method: 'POST',
       body: formData
     })
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
     const data = await response.json()
     chatHistory.value = data.chatHistory
-    fileinfo.value.push(file)
     isFileUploaded.value = true
   } catch (error) {
     writeError('Failed to upload file')
@@ -113,48 +129,79 @@ const saveMessage = (idx: number, content: string) => {
 </script>
 
 <template>
-  <div class="file-upload-flag" v-if="isFileUploaded" title="File Uploaded">
-    <p>File Uploaded:</p>
-    <div v-for="file in fileinfo" :key="file.name">
-      <p class="file-name">{{ file.name }}</p>
-      <p class="file-size">{{ file.size }}k</p>
+  <div class="file-upload-area">
+    <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
+      <template v-slot:prepend>
+        <q-icon name="attach_file"></q-icon>
+      </template>
+    </q-file>
+  </div>
+  <div class="chat-area" id="chat-area">
+    <div v-for="(x, idx) in chatHistory" :key="idx">
+      <q-chat-message
+        :name="x.role"
+        v-if="x.role !== 'system' && !editBox.includes(idx)"
+        size="8"
+        :sent="x.role === 'user'"
+        ><div>
+          <q-btn
+            @click="editMessage(idx)"
+            icon="edit"
+            rounded
+            dense
+            :class="['edit-button', x.role.toString()]"
+            v-if="!editBox.includes(idx)"
+            size="sm"
+            color="primary"
+            class="edit-button"
+          ></q-btn>
+          <vue-markdown :source="x.content" />
+        </div>
+      </q-chat-message>
+      <q-chat-message
+        :name="x.role"
+        v-if="editBox.includes(idx)"
+        :sent="x.role === 'user'"
+        size="8"
+        class="edit-chat"
+        ><div>
+          <textarea v-model="x.content as string" rows="10" />
+          <q-btn
+            @click="saveMessage(idx, x.content as string)"
+            icon="save"
+            label="Save"
+            size="sm"
+            color="primary"
+          />
+        </div>
+      </q-chat-message>
     </div>
   </div>
-  <div class="chat-area">
-    <div v-for="(x, idx) in chatHistory" :class="'bubble-row ' + x.role" :key="idx">
-      <div class="bubble" v-if="x.role !== 'system'">
-        <button
-          class="edit-button"
-          v-if="!editBox.includes(idx)"
-          @click="editMessage(idx)"
-          title="edit"
-        >
-          Edit
-        </button>
-        <cite>{{ x.role }}:</cite>
-        <vue-markdown :source="x.content" v-if="!editBox.includes(idx)" />
-        <div v-if="editBox.includes(idx)">
-          <textarea v-model="x.content" rows="10"></textarea>
-          <button class="save-button" @click="saveMessage(idx, x.content as string)">Save</button>
-        </div>
+  <div class="bottom-toolbar">
+    <div class="signature">
+      <div class="inner">
+        <vue-markdown :source="signatureContent" class="signature-line" />
+        <q-btn
+          @click="copyToClipboard"
+          label="Sign and Copy Markdown"
+          size="sm"
+          color="secondary"
+        ></q-btn>
       </div>
     </div>
-  </div>
-  <div class="signature">
-    <div class="inner">
-      <vue-markdown :source="signatureContent" class="signature-line" />
-      <button @click="copyToClipboard">Sign and Copy Markdown</button>
+    <div :class="'prompt ' + isLoading">
+      <div class="inner">
+        <q-input
+          outlined
+          v-model="formState.currentQuery"
+          placeholder="Message ChatGPT"
+          @keyup.enter="sendQuery"
+        ></q-input>
+        <q-btn color="primary" label="Send" @click="sendQuery" :loading="isLoading" size="sm" />
+      </div>
     </div>
-  </div>
-  <div :class="'prompt ' + isLoading">
-    <div class="inner">
-      <label for="upload-field" class="upload-button" title="upload timeline">Upload File</label>
-      <input type="file" id="upload-field" @change="uploadFile" />
-      <input type="text" placeholder="Message ChatGPT" id="query" @keyup.enter="sendQuery" />
-      <input type="submit" value="Send" @click="sendQuery" />
+    <div class="error-message" v-if="isError">
+      <p>{{ errorMessage }}</p>
     </div>
-  </div>
-  <div class="error-message" v-if="isError">
-    <p>{{ errorMessage }}</p>
   </div>
 </template>

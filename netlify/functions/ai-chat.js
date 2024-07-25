@@ -53,17 +53,19 @@ const handler = async (event) => {
     if (extname(formData.file.filename) === '.md') {
       // Append file content to chatHistory
       const updatedChatHistory = formData.chatHistory || []
-      updatedChatHistory.push({
+      const newItem = {
         role: 'system',
         content: `${formData.file.content}`
-      })
+      }
+      if (!updatedChatHistory.includes(newItem)) {
+        updatedChatHistory.push(newItem)
+      }
 
       return {
         statusCode: 200,
         body: JSON.stringify({
           message: 'Markdown file processed successfully',
-          chatHistory: updatedChatHistory,
-          filename: formData.file.filename
+          chatHistory: updatedChatHistory
         })
       }
     } else {
@@ -83,7 +85,7 @@ const handler = async (event) => {
       })
       const params = {
         messages: chatHistory,
-        model: 'gpt-4-turbo'
+        model: 'gpt-3.5-turbo'
       }
 
       const response = await openai.chat.completions.create(params)
