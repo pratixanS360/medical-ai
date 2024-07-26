@@ -71,15 +71,15 @@ const sendQuery = () => {
 
 const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) => {
   return (
-    '##### Transcript\n\n\n' +
+    '### Transcript\n' +
     json
       .map((x) => {
         if (x.role !== 'system') {
-          return `###### ${x.role}:\n${x.content}\n\n`
+          return `##### ${x.role}:\n${x.content}`
         }
       })
       .join('\n') +
-    '\n\n\n##### ' +
+    '\n\n##### ' +
     signatureContent()
   )
 }
