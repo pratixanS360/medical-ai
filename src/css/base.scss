@@ -52,8 +52,12 @@
 }
 
 .file-upload-area {
+  opacity: 0;
   display: flex;
   justify-content: flex-end;
+  &.file-exists {
+    opacity: 1;
+  }
 }
 .signature-line {
   height: 36px;

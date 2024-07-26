@@ -152,10 +152,17 @@ const saveMessage = (idx: number, content: string) => {
   editBox.value.splice(editBox.value.indexOf(idx), 1)
   return
 }
+
+const pickFiles = () => {
+  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+  if (fileInput) {
+    fileInput.click()
+  }
+}
 </script>
 
 <template>
-  <div class="file-upload-area">
+  <div :class="{ 'file-exists': fileFormState.file, 'file-upload-area': true }">
     <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
       <template v-slot:prepend>
         <q-icon name="attach_file"></q-icon>
@@ -215,6 +222,8 @@ const saveMessage = (idx: number, content: string) => {
     </div>
     <div :class="'prompt ' + isLoading">
       <div class="inner">
+        <q-btn @click="pickFiles" flat icon="attach_file" />
+
         <q-input
           outlined
           v-model="formState.currentQuery"
