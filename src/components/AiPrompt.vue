@@ -15,6 +15,7 @@ import {
   QCardActions
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
+import 'vue3-gnap/dist/style.css'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 let editBox = ref<number[]>([])
@@ -244,6 +245,13 @@ const pickFiles = () => {
           @keyup.enter="sendQuery"
         ></q-input>
         <q-btn color="primary" label="Send" @click="sendQuery" :loading="isLoading" size="sm" />
+        <GNAP
+          @on-authorized="showAuth"
+          @jwt="showJWT"
+          helper="blue large"
+          :access="access"
+          server="https://shihjay.xyz/api/as"
+        />
       </div>
     </div>
     <div class="error-message">
@@ -261,11 +269,4 @@ const pickFiles = () => {
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <GNAP
-    @on-authorized="showAuth"
-    @jwt="showJWT"
-    helper="blue large"
-    :access="access"
-    server="https://shihjay.xyz/api/as"
-  />
 </template>
