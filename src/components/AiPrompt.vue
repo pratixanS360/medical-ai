@@ -15,7 +15,6 @@ import {
   QCardActions
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
-import 'vue3-gnap/dist/style.css'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 let editBox = ref<number[]>([])

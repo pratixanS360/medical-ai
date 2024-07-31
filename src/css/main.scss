@@ -25,6 +25,17 @@
   .q-input {
     width: 100%;
   }
+  button.blue {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    outline: none;
+    margin-left: 0.5em;
+    cursor: pointer;
+    i {
+      display: none;
+    }
+  }
 }
 .signature {
   padding: 15px 0 15px;
