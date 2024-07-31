@@ -12,9 +12,9 @@ import {
   QDialog,
   QCard,
   QCardSection,
-  QCardActions,
-  is
+  QCardActions
 } from 'quasar'
+import { GNAP } from 'vue3-gnap'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 let editBox = ref<number[]>([])
@@ -36,7 +36,22 @@ const formState = reactive(<QueryFormState>{
 const fileFormState = reactive(<FileFormState>{
   file: null
 })
-
+const access = [
+  {
+    type: 'App',
+    actions: ['read', 'write'],
+    locations: [
+      'https://nosh-app-mj3xd.ondigitalocean.app/app/chart/nosh_2c23641c-c1b4-4f5c-92e8-c749c54a34da'
+    ],
+    purpose: 'Clinical - Routine'
+  }
+]
+function showJWT(jwt: string) {
+  console.log(jwt)
+}
+function showAuth() {
+  console.log("I'm authorized!")
+}
 const postData = async (url = '', data = {}) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -101,9 +116,8 @@ async function uploadFile(e: Event) {
     writeError('No file selected')
     return
   }
-  const file = fileInput.files[0]
   const formData = new FormData()
-  formData.append('file', file)
+  formData.append('file', fileInput.files[0])
   formData.append('chatHistory', JSON.stringify(chatHistory.value))
 
   try {
@@ -113,10 +127,11 @@ async function uploadFile(e: Event) {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      writeError('Failed to upload file')
+      return
     }
-    const data = await response.json()
-    chatHistory.value = data.chatHistory
+    const data = response.json()
+    chatHistory.value = data.chatHistory || []
   } catch (error) {
     writeError('Failed to upload file')
   }
@@ -178,32 +193,31 @@ const pickFiles = () => {
         :sent="x.role === 'user'"
         ><div>
           <q-btn
-            @click="editMessage(idx)"
-            icon="edit"
             dense
             flat
+            size="sm"
+            icon="edit"
             :class="['edit-button', x.role.toString()]"
             v-if="!editBox.includes(idx)"
-            size="sm"
-            class="edit-button"
+            @click="editMessage(idx)"
           ></q-btn>
           <vue-markdown :source="x.content" />
         </div>
       </q-chat-message>
       <q-chat-message
-        :name="x.role"
-        v-if="editBox.includes(idx)"
-        :sent="x.role === 'user'"
         size="8"
         class="edit-chat"
+        :name="x.role"
+        :sent="x.role === 'user'"
+        v-if="editBox.includes(idx)"
         ><div>
           <textarea v-model="x.content as string" rows="10" />
           <q-btn
-            @click="saveMessage(idx, x.content as string)"
-            icon="save"
-            label="Save"
             size="sm"
+            icon="save"
             color="primary"
+            label="Save"
+            @click="saveMessage(idx, x.content as string)"
           />
         </div>
       </q-chat-message>
@@ -213,21 +227,20 @@ const pickFiles = () => {
     <div class="signature">
       <div class="inner">
         <q-btn
-          @click="openPopup"
-          label="Sign and Copy Markdown"
           size="sm"
           color="secondary"
+          label="Sign and Copy Markdown"
+          @click="openPopup"
         ></q-btn>
       </div>
     </div>
     <div :class="'prompt ' + isLoading">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
-
         <q-input
           outlined
-          v-model="formState.currentQuery"
           placeholder="Message ChatGPT"
+          v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
         ></q-input>
         <q-btn color="primary" label="Send" @click="sendQuery" :loading="isLoading" size="sm" />
@@ -248,4 +261,11 @@ const pickFiles = () => {
       </q-card-actions>
     </q-card>
   </q-dialog>
+  <GNAP
+    @on-authorized="showAuth"
+    @jwt="showJWT"
+    helper="blue large"
+    :access="access"
+    server="https://shihjay.xyz/api/as"
+  />
 </template>

@@ -1,21 +1,78 @@
 @import './base.scss';
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
+
+.chat-area {
+  padding: 1em 0 240px;
+  .q-message-text-content {
+    textarea {
+      width: 100%;
+    }
+  }
+}
+.bottom-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+.prompt {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  background-color: white;
+  &.true * {
+    opacity: 0.5;
+  }
+  .q-input {
+    width: 100%;
+  }
+}
+.signature {
+  padding: 15px 0 15px;
+  display: flex;
+  width: 100%;
+  background: white;
+  box-shadow: 20px 5px 15px rgba(0, 0, 0, 0.4);
 }
 
-body {
-  min-height: 100vh;
-  line-height: 1.6;
-  font-family: sans-serif;
-  font-size: 15px;
-}
-.wrapper {
+.prompt .inner,
+.signature .inner,
+.error-message {
   width: 90%;
   max-width: 800px;
   margin: 0 auto;
   position: relative;
+}
+.signature .inner {
+  justify-content: flex-end;
+}
+@media (min-width: 768px) {
+  .prompt .inner,
+  .signature .inner {
+    display: flex;
+  }
+}
+
+.file-upload-area {
+  opacity: 0;
+  display: flex;
+  justify-content: flex-end;
+  &.file-exists {
+    opacity: 1;
+  }
+}
+.signature-line {
+  height: 36px;
+  display: flex;
+  align-items: flex-end;
+}
+.edit-button {
+  float: right;
+}
+.error-message {
+  color: red;
+  font-size: 12px;
+  height: 30px;
+}
+.error-message p {
+  font-weight: bold;
 }
