@@ -36,14 +36,16 @@ const formState = reactive(<QueryFormState>{
 const fileFormState = reactive(<FileFormState>{
   file: null
 })
+
+const urlParams = new URLSearchParams(window.location.search)
+const uri = urlParams.get('uri') || 'https://shihjay.xyz/api/as'
+
 const access = [
   {
     type: 'App',
     actions: ['read', 'write'],
-    locations: [
-      'https://nosh-app-mj3xd.ondigitalocean.app/app/chart/nosh_2c23641c-c1b4-4f5c-92e8-c749c54a34da'
-    ],
-    purpose: 'Clinical - Routine'
+    locations: [uri],
+    purpose: 'MAIA - Testing'
   }
 ]
 function showJWT(jwt: string) {
@@ -167,7 +169,6 @@ const saveMessage = (idx: number, content: string) => {
   editBox.value.splice(editBox.value.indexOf(idx), 1)
   return
 }
-
 const pickFiles = () => {
   const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
   if (fileInput) {
