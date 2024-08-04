@@ -17,12 +17,14 @@ import {
 import { GNAP } from 'vue3-gnap'
 
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
-let editBox = ref<number[]>([])
-let Username = ref<string>('Santa Claus')
-let errorMessage = ref<string>('')
-let isLoading = ref<boolean>(false)
-let isError = ref<boolean>(false)
-let isPreview = ref<boolean>(false)
+const appState = {
+  editBox: ref<number[]>([]),
+  userName: ref<string>('Santa Claus'),
+  errorMessage: ref<string>(''),
+  isLoading: ref<boolean>(false),
+  isError: ref<boolean>(false),
+  isPreview: ref<boolean>(false)
+}
 
 type QueryFormState = {
   currentQuery: string | null
@@ -39,11 +41,11 @@ const fileFormState = reactive(<FileFormState>{
 
 const urlParams = new URLSearchParams(window.location.search)
 const uri = urlParams.get('uri') || 'https://shihjay.xyz/api/as'
-
+console.log('Target URI: ', uri)
 const access = [
   {
     type: 'App',
-    actions: ['read', 'write'],
+    actions: ['read'],
     locations: [uri],
     purpose: 'MAIA - Testing'
   }
@@ -54,12 +56,10 @@ function showJWT(jwt: string) {
 function showAuth() {
   console.log("I'm authorized!")
 }
-const postData = async (url = '', data = {}) => {
+const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers,
     body: JSON.stringify(data)
   })
 
@@ -72,12 +72,12 @@ const postData = async (url = '', data = {}) => {
 }
 
 const sendQuery = () => {
-  isLoading.value = true
+  appState.isLoading.value = true
   postData('/.netlify/functions/ai-chat', {
     chatHistory: chatHistory.value,
     newValue: formState.currentQuery
   }).then((data) => {
-    isLoading.value = false
+    appState.isLoading.value = false
     chatHistory.value = data
     formState.currentQuery = ''
     setTimeout(() => {
@@ -102,7 +102,7 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
 }
 
 async function copyToClipboard() {
-  closePopup()
+  appState.isPreview.value = false
   const message = convertJSONtoMarkdown(chatHistory.value)
   try {
     await navigator.clipboard.writeText(message)
@@ -140,33 +140,25 @@ async function uploadFile(e: Event) {
 }
 
 const signatureContent = () => {
-  return `Signed by: ${Username.value} Date: ${new Date().toDateString()}`
+  return `Signed by: ${appState.userName.value} Date: ${new Date().toDateString()}`
 }
 
 const writeError = (message: string) => {
-  errorMessage.value = message
-  isError.value = true
+  appState.errorMessage.value = message
+  appState.isError.value = true
   setTimeout(() => {
-    isError.value = false
+    appState.isError.value = false
   }, 5000)
 }
 
-const closePopup = () => {
-  isPreview.value = false
-}
-
-const openPopup = () => {
-  isPreview.value = true
-}
-
 const editMessage = (idx: number) => {
-  editBox.value.push(idx)
+  appState.editBox.value.push(idx)
   return
 }
 
 const saveMessage = (idx: number, content: string) => {
   chatHistory.value[idx].content = content
-  editBox.value.splice(editBox.value.indexOf(idx), 1)
+  appState.editBox.value.splice(appState.editBox.value.indexOf(idx), 1)
   return
 }
 const pickFiles = () => {
@@ -189,7 +181,7 @@ const pickFiles = () => {
     <div v-for="(x, idx) in chatHistory" :key="idx">
       <q-chat-message
         :name="x.role"
-        v-if="x.role !== 'system' && !editBox.includes(idx)"
+        v-if="x.role !== 'system' && !appState.editBox.value.includes(idx)"
         size="8"
         :sent="x.role === 'user'"
         ><div>
@@ -199,7 +191,7 @@ const pickFiles = () => {
             size="sm"
             icon="edit"
             :class="['edit-button', x.role.toString()]"
-            v-if="!editBox.includes(idx)"
+            v-if="!appState.editBox.value.includes(idx)"
             @click="editMessage(idx)"
           ></q-btn>
           <vue-markdown :source="x.content" />
@@ -210,7 +202,7 @@ const pickFiles = () => {
         class="edit-chat"
         :name="x.role"
         :sent="x.role === 'user'"
-        v-if="editBox.includes(idx)"
+        v-if="appState.editBox.value.includes(idx)"
         ><div>
           <textarea v-model="x.content as string" rows="10" />
           <q-btn
@@ -231,11 +223,15 @@ const pickFiles = () => {
           size="sm"
           color="secondary"
           label="Sign and Copy Markdown"
-          @click="openPopup"
+          @click="
+            () => {
+              appState.isPreview.value = true
+            }
+          "
         ></q-btn>
       </div>
     </div>
-    <div :class="'prompt ' + isLoading">
+    <div :class="'prompt ' + appState.isLoading">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
         <q-input
@@ -244,7 +240,13 @@ const pickFiles = () => {
           v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
         ></q-input>
-        <q-btn color="primary" label="Send" @click="sendQuery" :loading="isLoading" size="sm" />
+        <q-btn
+          color="primary"
+          label="Send"
+          @click="sendQuery"
+          :loading="appState.isLoading.value"
+          size="sm"
+        />
         <GNAP
           @on-authorized="showAuth"
           @jwt="showJWT"
@@ -255,16 +257,25 @@ const pickFiles = () => {
       </div>
     </div>
     <div class="error-message">
-      <p v-if="isError">{{ errorMessage }}</p>
+      <p v-if="appState.isError.value">{{ appState.errorMessage.value }}</p>
     </div>
   </div>
-  <q-dialog v-model="isPreview">
+  <q-dialog v-model="appState.isPreview.value">
     <q-card>
       <q-card-section>
         <vue-markdown :source="convertJSONtoMarkdown(chatHistory)" />
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn label="Cancel" solid color="warning" @click="closePopup"></q-btn>
+        <q-btn
+          label="Cancel"
+          solid
+          color="warning"
+          @click="
+            () => {
+              appState.isPreview.value = false
+            }
+          "
+        ></q-btn>
         <q-btn :label="signatureContent()" solid color="primary" @click="copyToClipboard"></q-btn>
       </q-card-actions>
     </q-card>
