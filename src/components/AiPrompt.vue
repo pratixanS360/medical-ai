@@ -23,8 +23,7 @@ const appState = {
   errorMessage: ref<string>(''),
   isLoading: ref<boolean>(false),
   isError: ref<boolean>(false),
-  isPreview: ref<boolean>(false),
-  jwt: ref<string>('')
+  isPreview: ref<boolean>(false)
 }
 
 type QueryFormState = {
@@ -52,7 +51,6 @@ const access = [
   }
 ]
 function showJWT(jwt: string) {
-  appState.jwt.value = jwt
   fetch(uri, {
     headers: {
       Authorization: `Bearer ${jwt}`,
