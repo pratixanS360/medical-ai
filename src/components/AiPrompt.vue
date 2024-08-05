@@ -41,7 +41,7 @@ const fileFormState = reactive(<FileFormState>{
 })
 
 const urlParams = new URLSearchParams(window.location.search)
-let uri = urlParams.get('uri') || ''
+let uri = urlParams.get('uri')
 if (uri) {
   localStorage.setItem(localStorageKey, uri)
 } else {
