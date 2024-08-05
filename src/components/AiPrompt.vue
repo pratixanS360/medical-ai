@@ -23,7 +23,8 @@ const appState = {
   errorMessage: ref<string>(''),
   isLoading: ref<boolean>(false),
   isError: ref<boolean>(false),
-  isPreview: ref<boolean>(false)
+  isPreview: ref<boolean>(false),
+  jwt: ref<string>('')
 }
 
 type QueryFormState = {
@@ -51,7 +52,25 @@ const access = [
   }
 ]
 function showJWT(jwt: string) {
-  console.log(jwt)
+  appState.jwt.value = jwt
+  fetch(uri, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': `application/json`
+    }
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch')
+      }
+      return response.json()
+    })
+    .then((data) => {
+      console.log('Received:', data)
+    })
+    .catch((error) => {
+      console.error(error)
+    })
 }
 function showAuth() {
   console.log("I'm authorized!")
