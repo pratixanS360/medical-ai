@@ -16,6 +16,7 @@ import {
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
 
+const localStorageKey = 'noshuri'
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const appState = {
   editBox: ref<number[]>([]),
@@ -40,8 +41,12 @@ const fileFormState = reactive(<FileFormState>{
 })
 
 const urlParams = new URLSearchParams(window.location.search)
-const uri = urlParams.get('uri') || 'https://shihjay.xyz/api/as'
-console.log('Target URI: ', uri)
+let uri = urlParams.get('uri') || ''
+if (uri) {
+  localStorage.setItem(localStorageKey, uri)
+} else {
+  uri = localStorage.getItem(localStorageKey) || ''
+}
 const access = [
   {
     type: 'App',
