@@ -47,6 +47,7 @@ if (uri) {
 } else {
   uri = localStorage.getItem(localStorageKey) || ''
 }
+console.log(uri)
 const access = [
   {
     type: 'App',
