@@ -59,18 +59,21 @@ const access = [
 function showJWT(jwt: string) {
   fetch(uri, {
     headers: {
-      Authorization: `Bearer ${jwt}`,
-      'Content-Type': `application/json`
+      Authorization: `Bearer ${jwt}`
     }
   })
     .then((response) => {
       if (!response.ok) {
         throw new Error('Failed to fetch')
       }
-      return response.json()
+      return response.text()
     })
     .then((data) => {
       console.log('Received:', data)
+      chatHistory.value.push({
+        role: 'system',
+        content: data
+      })
     })
     .catch((error) => {
       console.error(error)
