@@ -100,6 +100,7 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
   }
 }
 const saveToNosh = async () => {
+  appState.isLoading.value = true
   const response = await fetch(uri.replace('Timeline', 'md'), {
     method: 'PUT',
     headers: {
@@ -113,6 +114,8 @@ const saveToNosh = async () => {
     const res = await response.json()
     console.log('Received:', res)
     writeError('Saved to Nosh')
+    appState.isLoading.value = false
+    appState.isPreview.value = true
   } catch (error) {
     writeError('Failed to parse JSON. Probably a timeout.')
     return null
@@ -306,20 +309,18 @@ const pickFiles = () => {
   <q-dialog v-model="appState.isPreview.value">
     <q-card>
       <q-card-section>
-        <vue-markdown :source="convertJSONtoMarkdown(chatHistory)" />
+        <h3>Record Saved to Nosh</h3>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn
-          label="Cancel"
+          label="Cool. Got it."
           solid
-          color="warning"
           @click="
             () => {
               appState.isPreview.value = false
             }
           "
         ></q-btn>
-        <q-btn :label="signatureContent()" solid color="primary" @click="copyToClipboard"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
