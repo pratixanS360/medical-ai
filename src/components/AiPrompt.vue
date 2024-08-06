@@ -15,6 +15,7 @@ import {
   QCardActions
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
+import { write } from 'fs'
 
 const localStorageKey = 'noshuri'
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
@@ -24,7 +25,8 @@ const appState = {
   errorMessage: ref<string>(''),
   isLoading: ref<boolean>(false),
   isError: ref<boolean>(false),
-  isPreview: ref<boolean>(false)
+  isPreview: ref<boolean>(false),
+  jwt: ref<string>('')
 }
 
 type QueryFormState = {
@@ -57,9 +59,10 @@ const access = [
   }
 ]
 function showJWT(jwt: string) {
+  appState.jwt.value = jwt
   fetch(uri, {
     headers: {
-      Authorization: `Bearer ${jwt}`
+      Authorization: `Bearer ${appState.jwt.value}`
     }
   })
     .then((response) => {
@@ -96,7 +99,25 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
     return null
   }
 }
+const saveToNosh = async () => {
+  const response = await fetch(uri.replace('Timeline', 'md'), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${appState.jwt.value}`
+    },
+    body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
+  })
 
+  try {
+    const res = await response.json()
+    console.log('Received:', res)
+    writeError('Saved to Nosh')
+  } catch (error) {
+    writeError('Failed to parse JSON. Probably a timeout.')
+    return null
+  }
+}
 const sendQuery = () => {
   appState.isLoading.value = true
   postData('/.netlify/functions/ai-chat', {
@@ -249,11 +270,7 @@ const pickFiles = () => {
           size="sm"
           color="secondary"
           label="Sign and Copy Markdown"
-          @click="
-            () => {
-              appState.isPreview.value = true
-            }
-          "
+          @click="saveToNosh"
         ></q-btn>
       </div>
     </div>
