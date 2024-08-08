@@ -85,6 +85,7 @@ function showJWT(jwt: string) {
     return
   }
   appState.jwt.value = jwt
+  writeMessage('Loading Patient Timeline...', 'success')
   fetch(uri, {
     headers: {
       Authorization: `Bearer ${appState.jwt.value}`
@@ -100,11 +101,11 @@ function showJWT(jwt: string) {
       console.log('Received:', data)
       appState.timelineContent.value = data
       appState.timelineAttached.value = true
-
       chatHistory.value.push({
         role: 'system',
         content: data
       })
+      writeMessage('Patient Timeline Loaded', 'success')
     })
     .catch((error) => {
       console.error(error)
@@ -355,12 +356,6 @@ const pickFiles = () => {
         <q-btn icon="close" flat round dense @click="appState.showTimeline.value = false"></q-btn>
       </q-card-section>
       <q-card-section>
-        <h1>Words</h1>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum enim velit ipsum,
-          perferendis praesentium obcaecati id. Veniam atque, quasi veritatis aliquam culpa ut
-          minima et, tenetur voluptates, est rem consequuntur?
-        </p>
         <vue-markdown :source="appState.timelineContent.value" />
       </q-card-section>
       <q-card-actions align="right">
