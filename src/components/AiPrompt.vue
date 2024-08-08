@@ -15,7 +15,6 @@ import {
   QCardActions,
   QToggle,
   QBtnGroup,
-  QAjaxBar,
   QSpace
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
@@ -291,7 +290,7 @@ const pickFiles = () => {
             color="primary"
             label="Save"
             @click="saveMessage(idx, x.content as string)"
-          />
+          ></q-btn>
         </div>
       </q-chat-message>
     </div>
@@ -336,7 +335,6 @@ const pickFiles = () => {
       <p v-if="appState.isMessage.value">
         {{ appState.message.value }}
       </p>
-      <q-ajax-bar />
     </div>
   </div>
   <q-dialog v-model="appState.isModal.value">
