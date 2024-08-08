@@ -12,7 +12,11 @@ import {
   QDialog,
   QCard,
   QCardSection,
-  QCardActions
+  QCardActions,
+  QToggle,
+  QSlideTransition,
+  QBtnGroup,
+  QAjaxBar
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
 
@@ -20,12 +24,18 @@ const localStorageKey = 'noshuri'
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const appState = {
   editBox: ref<number[]>([]),
-  userName: ref<string>('Santa Claus'),
-  errorMessage: ref<string>(''),
+  userName: ref<string>(''),
+  message: ref<string>(''),
+  messageType: ref<string>(''),
   isLoading: ref<boolean>(false),
-  isError: ref<boolean>(false),
-  isPreview: ref<boolean>(false),
-  jwt: ref<string>('')
+  isMessage: ref<boolean>(false),
+  isModal: ref<boolean>(false),
+  jwt: ref<string>(''),
+  isAuthorized: ref<boolean>(false),
+  isSaving: ref<boolean>(false),
+  timelineAttached: ref<boolean>(false),
+  timelineContent: ref<string>(''),
+  showTimeline: ref<boolean>(false)
 }
 
 type QueryFormState = {
@@ -41,11 +51,12 @@ const fileFormState = reactive(<FileFormState>{
   file: null
 })
 
-const writeError = (message: string) => {
-  appState.errorMessage.value = message
-  appState.isError.value = true
+const writeMessage = (message: string, messageType: string) => {
+  appState.message.value = message
+  appState.messageType.value = messageType
+  appState.isMessage.value = true
   setTimeout(() => {
-    appState.isError.value = false
+    appState.isMessage.value = false
   }, 5000)
 }
 
@@ -55,8 +66,10 @@ if (uri && uri.length > 0) {
   sessionStorage.setItem(localStorageKey, uri)
 } else if (sessionStorage.getItem(localStorageKey)) {
   uri = sessionStorage.getItem(localStorageKey) || ''
+} else {
+  writeMessage('No URI found in Querystring or LocalStorage', 'error')
+  uri = ''
 }
-console.log('URI', uri)
 const access = [
   {
     type: 'App',
@@ -67,6 +80,10 @@ const access = [
 ]
 
 function showJWT(jwt: string) {
+  if (!uri) {
+    writeMessage('No URI found in Querystring or LocalStorage', 'error')
+    return
+  }
   appState.jwt.value = jwt
   fetch(uri, {
     headers: {
@@ -81,6 +98,9 @@ function showJWT(jwt: string) {
     })
     .then((data) => {
       console.log('Received:', data)
+      appState.timelineContent.value = data
+      appState.timelineAttached.value = true
+
       chatHistory.value.push({
         role: 'system',
         content: data
@@ -91,7 +111,7 @@ function showJWT(jwt: string) {
     })
 }
 function showAuth() {
-  console.log("I'm authorized!")
+  appState.isAuthorized.value = true
 }
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   const response = await fetch(url, {
@@ -103,7 +123,7 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
   try {
     return await response.json()
   } catch (error) {
-    writeError('Failed to parse JSON. Probably a timeout.')
+    writeMessage('Failed to parse JSON. Probably a timeout.', 'error')
     return null
   }
 }
@@ -121,11 +141,12 @@ const saveToNosh = async () => {
   try {
     const res = await response.json()
     console.log('Received:', res)
-    writeError('Saved to Nosh')
+    writeMessage('Saved to Nosh', 'success')
+    chatHistory.value = []
     appState.isLoading.value = false
-    appState.isPreview.value = true
+    appState.isModal.value = true
   } catch (error) {
-    writeError('Failed to parse JSON. Probably a timeout.')
+    writeMessage('Failed to parse JSON. Probably a timeout.', 'error')
     return null
   }
 }
@@ -161,7 +182,7 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
 async function uploadFile(e: Event) {
   let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
-    writeError('No file selected')
+    writeMessage('No file selected', 'error')
     return
   }
   const formData = new FormData()
@@ -169,19 +190,22 @@ async function uploadFile(e: Event) {
   formData.append('chatHistory', JSON.stringify(chatHistory.value))
 
   try {
-    const response = await fetch('/.netlify/functions/ai-chat', {
+    const response = (await fetch('/.netlify/functions/ai-chat', {
       method: 'POST',
       body: formData
-    })
+    })) as Response
 
     if (!response.ok) {
-      writeError('Failed to upload file')
+      writeMessage('Failed to upload file', 'error')
       return
     }
-    const data = response.json()
-    chatHistory.value = data.chatHistory || []
+    const data = await response.json()
+    if (data.chatHistory) {
+      writeMessage('File uploaded', 'success')
+      chatHistory.value = data.chatHistory
+    }
   } catch (error) {
-    writeError('Failed to upload file')
+    writeMessage('Failed to upload file', 'error')
   }
 }
 
@@ -214,6 +238,21 @@ const pickFiles = () => {
         <q-icon name="attach_file"></q-icon>
       </template>
     </q-file>
+  </div>
+  <div class="timeline-attached" v-if="appState.timelineAttached.value">
+    <div class="q-pa-md">
+      <q-card>
+        <q-card-section
+          >Timeline Attached
+          <template v-slot:prepend> <q-icon name="attach_file"></q-icon> </template></q-card-section
+      ></q-card>
+      <q-toggle v-model="appState.showTimeline" label="Show Timeline" class="q-mb-md" />
+      <q-slide-transition>
+        <div v-show="appState.showTimeline.value">
+          <vue-markdown :source="appState.timelineContent.value" />
+        </div>
+      </q-slide-transition>
+    </div>
   </div>
   <div class="chat-area" id="chat-area">
     <div v-for="(x, idx) in chatHistory" :key="idx">
@@ -256,56 +295,62 @@ const pickFiles = () => {
   </div>
   <div class="bottom-toolbar">
     <div class="signature">
-      <div class="inner">
-        <q-btn
-          size="sm"
-          color="secondary"
-          label="Sign and Copy Markdown"
-          @click="saveToNosh"
-        ></q-btn>
-      </div>
+      <div class="inner"></div>
     </div>
     <div :class="'prompt ' + appState.isLoading">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
+
         <q-input
           outlined
           placeholder="Message ChatGPT"
           v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
         ></q-input>
-        <q-btn
-          color="primary"
-          label="Send"
-          @click="sendQuery"
-          :loading="appState.isLoading.value"
-          size="sm"
-        />
-        <GNAP
-          @on-authorized="showAuth"
-          @jwt="showJWT"
-          helper="blue large"
-          :access="access"
-          server="https://shihjay.xyz/api/as"
-        />
+        <q-btn-group flat>
+          <q-btn
+            color="primary"
+            label="Send"
+            @click="sendQuery"
+            :loading="appState.isLoading.value"
+            size="sm"
+          />
+          <GNAP
+            @on-authorized="showAuth"
+            @jwt="showJWT"
+            helper="blue large"
+            :access="access"
+            server="https://shihjay.xyz/api/as"
+          />
+          <q-btn
+            v-if="appState.isAuthorized.value"
+            size="sm"
+            color="secondary"
+            label="Save Transcript to Nosh"
+            @click="saveToNosh"
+          ></q-btn>
+        </q-btn-group>
       </div>
     </div>
-    <div class="error-message">
-      <p v-if="appState.isError.value">{{ appState.errorMessage.value }}</p>
+    <div :class="'message ' + appState.messageType.value">
+      <p v-if="appState.isMessage.value">
+        {{ appState.message.value }}
+      </p>
+      <q-ajax-bar />
     </div>
   </div>
-  <q-dialog v-model="appState.isPreview.value">
+  <q-dialog v-model="appState.isModal.value">
     <q-card>
       <q-card-section>
-        <h3>Record Saved to Nosh</h3>
+        <p>Record Saved to Nosh</p>
       </q-card-section>
       <q-card-actions align="right">
         <q-btn
-          label="Cool. Got it."
+          label="Ok"
           solid
           @click="
             () => {
-              appState.isPreview.value = false
+              appState.isModal.value = false
             }
           "
         ></q-btn>
