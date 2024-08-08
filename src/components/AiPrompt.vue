@@ -15,7 +15,6 @@ import {
   QCardActions
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
-import { write } from 'fs'
 
 const localStorageKey = 'noshuri'
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
@@ -42,12 +41,20 @@ const fileFormState = reactive(<FileFormState>{
   file: null
 })
 
+const writeError = (message: string) => {
+  appState.errorMessage.value = message
+  appState.isError.value = true
+  setTimeout(() => {
+    appState.isError.value = false
+  }, 5000)
+}
+
 const urlParams = new URLSearchParams(window.location.search)
 let uri = urlParams.get('uri')
 if (uri && uri.length > 0) {
-  localStorage.setItem(localStorageKey, uri)
-} else {
-  uri = localStorage.getItem(localStorageKey) || ''
+  sessionStorage.setItem(localStorageKey, uri)
+} else if (sessionStorage.getItem(localStorageKey)) {
+  uri = sessionStorage.getItem(localStorageKey) || ''
 }
 console.log('URI', uri)
 const access = [
@@ -58,6 +65,7 @@ const access = [
     purpose: 'MAIA - Testing'
   }
 ]
+
 function showJWT(jwt: string) {
   appState.jwt.value = jwt
   fetch(uri, {
@@ -150,18 +158,6 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
     signatureContent()
   )
 }
-
-async function copyToClipboard() {
-  appState.isPreview.value = false
-  const message = convertJSONtoMarkdown(chatHistory.value)
-  try {
-    await navigator.clipboard.writeText(message)
-    writeError('Copied to clipboard')
-  } catch (err) {
-    writeError('Failed to copy to clipboard')
-  }
-}
-
 async function uploadFile(e: Event) {
   let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
@@ -191,14 +187,6 @@ async function uploadFile(e: Event) {
 
 const signatureContent = () => {
   return `Signed by: ${appState.userName.value} Date: ${new Date().toDateString()}`
-}
-
-const writeError = (message: string) => {
-  appState.errorMessage.value = message
-  appState.isError.value = true
-  setTimeout(() => {
-    appState.isError.value = false
-  }, 5000)
 }
 
 const editMessage = (idx: number) => {
