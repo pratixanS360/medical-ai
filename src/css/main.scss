@@ -24,14 +24,15 @@
   }
   .q-input {
     flex-basis: 100%;
-    margin-right: 0.75em;
+  }
+  button {
+    margin-left: 0.5em;
   }
   button.blue {
     background-color: #1976d2;
     color: white;
     border: none;
     outline: none;
-    margin-left: 0.5em;
     cursor: pointer;
     i {
       display: none;
@@ -65,11 +66,21 @@
 }
 
 .file-upload-area {
-  opacity: 0;
   display: flex;
   justify-content: flex-end;
-  &.file-exists {
-    opacity: 1;
+  label {
+    opacity: 0;
+    &.file-exists {
+      opacity: 1;
+    }
+  }
+  .q-card {
+    margin: 0 0 0 1em;
+    width: 100%;
+    max-width: 200px;
+    .q-card-main {
+      padding: 0;
+    }
   }
 }
 .signature-line {

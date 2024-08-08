@@ -14,9 +14,9 @@ import {
   QCardSection,
   QCardActions,
   QToggle,
-  QSlideTransition,
   QBtnGroup,
-  QAjaxBar
+  QAjaxBar,
+  QSpace
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
 
@@ -232,27 +232,29 @@ const pickFiles = () => {
 </script>
 
 <template>
-  <div :class="{ 'file-exists': fileFormState.file, 'file-upload-area': true }">
-    <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
+  <div class="file-upload-area">
+    <q-file
+      v-model="fileFormState.file"
+      filled
+      counter
+      multiple
+      append
+      @input="uploadFile"
+      :class="{ 'file-exists': fileFormState.file }"
+    >
       <template v-slot:prepend>
         <q-icon name="attach_file"></q-icon>
       </template>
     </q-file>
-  </div>
-  <div class="timeline-attached" v-if="appState.timelineAttached.value">
-    <div class="q-pa-md">
-      <q-card>
-        <q-card-section
-          >Timeline Attached
-          <template v-slot:prepend> <q-icon name="attach_file"></q-icon> </template></q-card-section
-      ></q-card>
-      <q-toggle v-model="appState.showTimeline" label="Show Timeline" class="q-mb-md" />
-      <q-slide-transition>
-        <div v-show="appState.showTimeline.value">
-          <vue-markdown :source="appState.timelineContent.value" />
-        </div>
-      </q-slide-transition>
-    </div>
+    <q-card v-if="appState.timelineAttached.value">
+      <q-card-section>
+        <p>NOSH Timeline Attached</p>
+        <q-btn
+          label="Show"
+          size="sm"
+          @click="appState.showTimeline.value = !appState.showTimeline.value"
+        /> </q-card-section
+    ></q-card>
   </div>
   <div class="chat-area" id="chat-area">
     <div v-for="(x, idx) in chatHistory" :key="idx">
@@ -300,36 +302,33 @@ const pickFiles = () => {
     <div :class="'prompt ' + appState.isLoading">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
-
         <q-input
           outlined
           placeholder="Message ChatGPT"
           v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
         ></q-input>
-        <q-btn-group flat>
-          <q-btn
-            color="primary"
-            label="Send"
-            @click="sendQuery"
-            :loading="appState.isLoading.value"
-            size="sm"
-          />
-          <GNAP
-            @on-authorized="showAuth"
-            @jwt="showJWT"
-            helper="blue large"
-            :access="access"
-            server="https://shihjay.xyz/api/as"
-          />
-          <q-btn
-            v-if="appState.isAuthorized.value"
-            size="sm"
-            color="secondary"
-            label="Save Transcript to Nosh"
-            @click="saveToNosh"
-          ></q-btn>
-        </q-btn-group>
+        <q-btn
+          color="primary"
+          label="Send"
+          @click="sendQuery"
+          :loading="appState.isLoading.value"
+          size="sm"
+        />
+        <q-btn
+          size="sm"
+          color="secondary"
+          label="Save"
+          @click="saveToNosh"
+          v-if="appState.isAuthorized.value"
+        ></q-btn>
+        <GNAP
+          helper="blue small"
+          @on-authorized="showAuth"
+          @jwt="showJWT"
+          :access="access"
+          server="https://shihjay.xyz/api/as"
+        />
       </div>
     </div>
     <div :class="'message ' + appState.messageType.value">
@@ -345,15 +344,27 @@ const pickFiles = () => {
         <p>Record Saved to Nosh</p>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn
-          label="Ok"
-          solid
-          @click="
-            () => {
-              appState.isModal.value = false
-            }
-          "
-        ></q-btn>
+        <q-btn label="Ok" solid @click="appState.isModal.value = false"></q-btn>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+  <q-dialog v-model="appState.showTimeline.value">
+    <q-card>
+      <q-card-section class="row">
+        <q-space />
+        <q-btn icon="close" flat round dense @click="appState.showTimeline.value = false"></q-btn>
+      </q-card-section>
+      <q-card-section>
+        <h1>Words</h1>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Illum enim velit ipsum,
+          perferendis praesentium obcaecati id. Veniam atque, quasi veritatis aliquam culpa ut
+          minima et, tenetur voluptates, est rem consequuntur?
+        </p>
+        <vue-markdown :source="appState.timelineContent.value" />
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn label="Close" solid @click="appState.showTimeline.value = false"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
