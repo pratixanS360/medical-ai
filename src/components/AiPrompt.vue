@@ -102,7 +102,7 @@ function showJWT(jwt: string) {
       appState.timelineAttached.value = true
       chatHistory.value.push({
         role: 'system',
-        content: 'timeline\n\nuploaded at ' + new Date().toLocaleString()
+        content: 'timeline\n\nuploaded at ' + new Date().toLocaleString + '\n\n' + data
       })
       writeMessage('Patient Timeline Loaded', 'success')
     })
