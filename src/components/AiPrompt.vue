@@ -102,7 +102,7 @@ function showJWT(jwt: string) {
       appState.timelineAttached.value = true
       chatHistory.value.push({
         role: 'system',
-        content: data
+        content: 'timeline\n\nuploaded at ' + new Date().toLocaleString()
       })
       writeMessage('Patient Timeline Loaded', 'success')
     })
@@ -179,6 +179,18 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
     signatureContent()
   )
 }
+
+function getSystemMessageType(message: string) {
+  const splitpiece = message.split('\n')[0]
+  console.log(splitpiece)
+  if (splitpiece.includes('timeline')) {
+    return 'timeline'
+  } else {
+    const fileInfo = JSON.parse(splitpiece)
+    return `${fileInfo.filename} uploaded.\n\n${fileInfo.size}`
+  }
+}
+
 async function uploadFile(e: Event) {
   let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
@@ -233,28 +245,11 @@ const pickFiles = () => {
 
 <template>
   <div class="file-upload-area">
-    <q-file
-      v-model="fileFormState.file"
-      filled
-      counter
-      multiple
-      append
-      @input="uploadFile"
-      :class="{ 'file-exists': fileFormState.file }"
-    >
+    <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
       <template v-slot:prepend>
         <q-icon name="attach_file"></q-icon>
       </template>
     </q-file>
-    <q-card v-if="appState.timelineAttached.value">
-      <q-card-section>
-        <p>NOSH Timeline Attached</p>
-        <q-btn
-          label="Show"
-          size="sm"
-          @click="appState.showTimeline.value = !appState.showTimeline.value"
-        /> </q-card-section
-    ></q-card>
   </div>
   <div class="chat-area" id="chat-area">
     <div v-for="(x, idx) in chatHistory" :key="idx">
@@ -292,6 +287,9 @@ const pickFiles = () => {
             @click="saveMessage(idx, x.content as string)"
           ></q-btn>
         </div>
+      </q-chat-message>
+      <q-chat-message :name="x.role" v-if="x.role === 'system'" size="8" sent>
+        <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
       </q-chat-message>
     </div>
   </div>

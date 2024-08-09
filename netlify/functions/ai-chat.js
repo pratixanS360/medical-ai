@@ -50,29 +50,21 @@ const handler = async (event) => {
       }
     }
 
-    if (extname(formData.file.filename) === '.md') {
-      // Append file content to chatHistory
-      const updatedChatHistory = formData.chatHistory || []
-      const newItem = {
-        role: 'system',
-        content: `${formData.file.content}`
-      }
-      if (!updatedChatHistory.includes(newItem)) {
-        updatedChatHistory.push(newItem)
-      }
+    const updatedChatHistory = formData.chatHistory || []
+    const newItem = {
+      role: 'system',
+      content: `{ "type":"file", "filename":"${formData.file.filename}", "size":"${event.headers['content-length']} bytes"}\n${formData.file.content}`
+    }
+    if (!updatedChatHistory.includes(newItem)) {
+      updatedChatHistory.push(newItem)
+    }
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          message: 'Markdown file processed successfully',
-          chatHistory: updatedChatHistory
-        })
-      }
-    } else {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: 'Invalid file type. Only .md files are accepted.' })
-      }
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Markdown file processed successfully',
+        chatHistory: updatedChatHistory
+      })
     }
   } else {
     // Handle other POST requests (e.g., chat completions)

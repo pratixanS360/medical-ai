@@ -66,22 +66,12 @@
 }
 
 .file-upload-area {
-  display: flex;
-  justify-content: flex-end;
-  label {
-    opacity: 0;
-    &.file-exists {
-      opacity: 1;
-    }
-  }
-  .q-card {
-    margin: 0 0 0 1em;
-    width: 100%;
-    max-width: 200px;
-    .q-card-main {
-      padding: 0;
-    }
-  }
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.attachment-message {
+  font-style: italic;
 }
 .signature-line {
   height: 36px;
