@@ -298,6 +298,16 @@ const pickFiles = () => {
         <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
       </q-chat-message>
     </div>
+    <q-card-actions class="signature-buttons" v-if="appState.isAuthorized.value">
+      <q-btn size="sm" color="secondary" label="End & Save Locally" @click="() => {}" />
+      <q-btn
+        size="sm"
+        color="secondary"
+        label="End, Sign, & Save to Nosh"
+        @click="saveToNosh"
+      ></q-btn>
+      <q-btn size="sm" color="warning" label="End without Saving" @click="() => {}" />
+    </q-card-actions>
   </div>
   <div class="bottom-toolbar">
     <div class="signature">
@@ -319,20 +329,15 @@ const pickFiles = () => {
           :loading="appState.isLoading.value"
           size="sm"
         />
-        <q-btn
-          size="sm"
-          color="secondary"
-          label="Save"
-          @click="saveToNosh"
-          v-if="appState.isAuthorized.value"
-        ></q-btn>
-        <GNAP
-          helper="blue small"
-          @on-authorized="showAuth"
-          @jwt="showJWT"
-          :access="access"
-          server="https://shihjay.xyz/api/as"
-        />
+        <div v-if="!appState.isAuthorized.value">
+          <GNAP
+            helper="blue small"
+            @on-authorized="showAuth"
+            @jwt="showJWT"
+            :access="access"
+            server="https://shihjay.xyz/api/as"
+          />
+        </div>
       </div>
     </div>
     <div :class="'message ' + appState.messageType.value">
