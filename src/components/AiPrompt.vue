@@ -298,7 +298,7 @@ const pickFiles = () => {
         <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
       </q-chat-message>
     </div>
-    <q-card-actions class="signature-buttons" v-if="appState.isAuthorized.value">
+    <div class="signature-buttons">
       <q-btn size="sm" color="secondary" label="End & Save Locally" @click="() => {}" />
       <q-btn
         size="sm"
@@ -307,13 +307,13 @@ const pickFiles = () => {
         @click="saveToNosh"
       ></q-btn>
       <q-btn size="sm" color="warning" label="End without Saving" @click="() => {}" />
-    </q-card-actions>
+    </div>
   </div>
   <div class="bottom-toolbar">
     <div class="signature">
       <div class="inner"></div>
     </div>
-    <div :class="'prompt ' + appState.isLoading">
+    <div :class="'prompt ' + appState.isLoading.value">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
         <q-input
@@ -321,6 +321,7 @@ const pickFiles = () => {
           placeholder="Message ChatGPT"
           v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
+          :loading="appState.isLoading.value"
         ></q-input>
         <q-btn
           color="primary"
@@ -335,6 +336,7 @@ const pickFiles = () => {
             @on-authorized="showAuth"
             @jwt="showJWT"
             :access="access"
+            :loading="appState.isLoading.value"
             server="https://shihjay.xyz/api/as"
           />
         </div>

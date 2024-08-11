@@ -34,17 +34,20 @@
     border: none;
     outline: none;
     cursor: pointer;
+    line-height: 1.715em;
+    padding: 6px 0;
     i {
       display: none;
     }
   }
 }
-.signature {
-  padding: 15px 0 15px;
+.signature-buttons {
   display: flex;
-  width: 100%;
-  background: white;
-  box-shadow: 20px 5px 15px rgba(0, 0, 0, 0.4);
+  justify-content: flex-end;
+  margin-top: 2em;
+  button {
+    margin-left: 0.5em;
+  }
 }
 
 .prompt .inner,
@@ -72,11 +75,6 @@
 }
 .attachment-message {
   font-style: italic;
-}
-.signature-line {
-  height: 36px;
-  display: flex;
-  align-items: flex-end;
 }
 .edit-button {
   float: right;
