@@ -73,7 +73,13 @@ const access = [
   {
     type: 'App',
     actions: ['read'],
-    locations: [uri, uri.replace('Timeline', 'md')],
+    locations: [uri],
+    purpose: 'MAIA - Testing'
+  },
+  {
+    type: 'App',
+    actions: ['write'],
+    locations: [uri.replace('Timeline', 'md')],
     purpose: 'MAIA - Testing'
   }
 ]
