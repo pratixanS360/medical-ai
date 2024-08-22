@@ -32,9 +32,8 @@ const appState = {
   jwt: ref<string>(''),
   isAuthorized: ref<boolean>(false),
   isSaving: ref<boolean>(false),
-  timelineAttached: ref<boolean>(false),
-  timelineContent: ref<string>(''),
-  showTimeline: ref<boolean>(false)
+  showSystemContent: ref<boolean>(false),
+  systemContent: ref<string>('')
 }
 
 type QueryFormState = {
@@ -104,8 +103,6 @@ function showJWT(jwt: string) {
     })
     .then((data) => {
       console.log('Received:', data)
-      appState.timelineContent.value = data
-      appState.timelineAttached.value = true
       chatHistory.value.push({
         role: 'system',
         content: 'timeline\n\nuploaded at ' + new Date().toLocaleString + '\n\n' + data
@@ -307,7 +304,20 @@ const pickFiles = () => {
         </div>
       </q-chat-message>
       <q-chat-message :name="x.role" v-if="x.role === 'system'" size="8" sent>
-        <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
+        <q-card>
+          <q-card-section>
+            <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
+          </q-card-section>
+          <q-card-actions>
+            <q-btn
+              label="View"
+              @click="
+                (appState.showSystemContent.value = true),
+                  (appState.systemContent.value = x.content)
+              "
+            ></q-btn>
+          </q-card-actions>
+        </q-card>
       </q-chat-message>
     </div>
     <div class="signature-buttons">
@@ -371,17 +381,20 @@ const pickFiles = () => {
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <q-dialog v-model="appState.showTimeline.value">
+  <q-dialog v-model="appState.showSystemContent.value">
     <q-card>
-      <q-card-section class="row">
-        <q-space />
-        <q-btn icon="close" flat round dense @click="appState.showTimeline.value = false"></q-btn>
-      </q-card-section>
       <q-card-section>
-        <vue-markdown :source="appState.timelineContent.value" />
+        <vue-markdown
+          :source="
+            appState.systemContent.value
+              .split('\n')
+              .splice(1, appState.systemContent.value.split('\n').length - 1)
+              .join('\n')
+          "
+        />
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn label="Close" solid @click="appState.showTimeline.value = false"></q-btn>
+        <q-btn label="Close" solid @click="appState.showSystemContent.value = false"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
