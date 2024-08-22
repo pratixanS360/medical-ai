@@ -95,6 +95,7 @@ function showJWT(jwt: string) {
   }
   appState.jwt.value = jwt
   writeMessage('Loading Patient Timeline...', 'success')
+  appState.isLoading.value = true
   fetch(uri, {
     headers: {
       Authorization: `Bearer ${appState.jwt.value}`
@@ -107,11 +108,11 @@ function showJWT(jwt: string) {
       return response.text()
     })
     .then((data) => {
-      console.log('Received:', data)
       chatHistory.value.push({
         role: 'system',
         content: 'timeline\n\nuploaded at ' + new Date().toLocaleString + '\n\n' + data
       })
+      appState.isLoading.value = false
       writeMessage('Patient Timeline Loaded', 'success')
     })
     .catch((error) => {
