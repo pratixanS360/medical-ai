@@ -23,7 +23,7 @@ const localStorageKey = 'noshuri'
 const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
 const appState = {
   editBox: ref<number[]>([]),
-  userName: ref<string>(''),
+  userName: ref<string>('DEMOUSER'),
   message: ref<string>(''),
   messageType: ref<string>(''),
   isLoading: ref<boolean>(false),
@@ -235,7 +235,19 @@ const editMessage = (idx: number) => {
   appState.editBox.value.push(idx)
   return
 }
-
+const saveToFile = () => {
+  const blob = new Blob([convertJSONtoMarkdown(chatHistory.value)], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'transcript.md'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+const closeNoSave = () => {
+  chatHistory.value = []
+  appState.isModal.value = false
+}
 const saveMessage = (idx: number, content: string) => {
   chatHistory.value[idx].content = content
   appState.editBox.value.splice(appState.editBox.value.indexOf(idx), 1)
@@ -299,14 +311,14 @@ const pickFiles = () => {
       </q-chat-message>
     </div>
     <div class="signature-buttons">
-      <q-btn size="sm" color="secondary" label="End & Save Locally" @click="() => {}" />
+      <q-btn size="sm" color="secondary" label="End & Save Locally" @click="saveToFile" />
       <q-btn
         size="sm"
         color="secondary"
         label="End, Sign, & Save to Nosh"
         @click="saveToNosh"
       ></q-btn>
-      <q-btn size="sm" color="warning" label="End without Saving" @click="() => {}" />
+      <q-btn size="sm" color="warning" label="End without Saving" @click="closeNoSave" />
     </div>
   </div>
   <div class="bottom-toolbar">
@@ -338,6 +350,7 @@ const pickFiles = () => {
             :access="access"
             :loading="appState.isLoading.value"
             server="https://shihjay.xyz/api/as"
+            label="Load Timeline from NOSH"
           />
         </div>
       </div>
