@@ -15,7 +15,8 @@ import {
   QCardActions,
   QToggle,
   QBtnGroup,
-  QSpace
+  QSpace,
+  QCircularProgress
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
 
@@ -119,6 +120,7 @@ function showJWT(jwt: string) {
 }
 function showAuth() {
   appState.isAuthorized.value = true
+  writeMessage('Authorized', 'success')
 }
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   const response = await fetch(url, {
@@ -136,6 +138,7 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
 }
 const saveToNosh = async () => {
   appState.isLoading.value = true
+  writeMessage('Saving to Nosh...', 'success')
   const response = await fetch(uri.replace('Timeline', 'md'), {
     method: 'PUT',
     headers: {
@@ -277,6 +280,15 @@ const pickFiles = () => {
 </script>
 
 <template>
+  <div :class="'loading-pane ' + appState.isLoading.value">
+    <q-circular-progress
+      indeterminate
+      rounded
+      size="50px"
+      color="white"
+      class="q-ma-md"
+    ></q-circular-progress>
+  </div>
   <div class="file-upload-area">
     <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
       <template v-slot:prepend>
@@ -356,7 +368,7 @@ const pickFiles = () => {
     <div class="signature">
       <div class="inner"></div>
     </div>
-    <div :class="'prompt ' + appState.isLoading.value">
+    <div class="prompt">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
         <q-input
@@ -364,24 +376,17 @@ const pickFiles = () => {
           placeholder="Message ChatGPT"
           v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
-          :loading="appState.isLoading.value"
         ></q-input>
-        <q-btn
-          color="primary"
-          label="Send"
-          @click="sendQuery"
-          :loading="appState.isLoading.value"
-          size="sm"
-        />
+        <q-btn color="primary" label="Send" @click="sendQuery" size="sm" />
         <div v-if="!appState.isAuthorized.value">
           <GNAP
+            name="gnap-btn"
             helper="blue small"
             @on-authorized="showAuth"
             @jwt="showJWT"
             :access="access"
-            :loading="appState.isLoading.value"
             server="https://shihjay.xyz/api/as"
-            label="Load Timeline from NOSH"
+            label="Connect to NOSH"
           />
         </div>
       </div>
@@ -398,7 +403,7 @@ const pickFiles = () => {
         <p>Record Saved to Nosh</p>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn label="Ok" solid @click="appState.isModal.value = false"></q-btn>
+        <q-btn label="Ok" solid @click="closeSession"></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
