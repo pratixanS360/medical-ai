@@ -385,6 +385,7 @@ const pickFiles = () => {
     <q-card>
       <q-card-section>
         <vue-markdown
+          class="system-content"
           :source="
             appState.systemContent.value
               .split('\n')
