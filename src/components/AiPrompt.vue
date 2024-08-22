@@ -197,7 +197,6 @@ const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) =
 
 function getSystemMessageType(message: string) {
   const splitpiece = message.split('\n')[0]
-  console.log(splitpiece)
   if (splitpiece.includes('timeline')) {
     return 'timeline'
   } else {
@@ -252,10 +251,17 @@ const saveToFile = () => {
   a.download = 'transcript.md'
   a.click()
   URL.revokeObjectURL(url)
+  closeSession()
 }
 const closeNoSave = () => {
   chatHistory.value = []
   appState.isModal.value = false
+  closeSession()
+}
+const closeSession = () => {
+  localStorage.removeItem('gnap')
+  sessionStorage.removeItem(localStorageKey)
+  window.close()
 }
 const saveMessage = (idx: number, content: string) => {
   chatHistory.value[idx].content = content
