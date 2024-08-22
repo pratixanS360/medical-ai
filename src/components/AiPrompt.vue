@@ -281,15 +281,6 @@ const pickFiles = () => {
 </script>
 
 <template>
-  <div :class="'loading-pane ' + appState.isLoading.value">
-    <q-circular-progress
-      indeterminate
-      rounded
-      size="50px"
-      color="white"
-      class="q-ma-md"
-    ></q-circular-progress>
-  </div>
   <div class="file-upload-area">
     <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
       <template v-slot:prepend>
@@ -396,6 +387,15 @@ const pickFiles = () => {
       <p v-if="appState.isMessage.value">
         {{ appState.message.value }}
       </p>
+    </div>
+    <div :class="'loading-pane ' + appState.isLoading.value">
+      <q-circular-progress
+        indeterminate
+        rounded
+        size="30px"
+        color="primary"
+        class="q-ma-md"
+      ></q-circular-progress>
     </div>
   </div>
   <q-dialog v-model="appState.isModal.value">
