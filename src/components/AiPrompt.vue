@@ -33,7 +33,11 @@ const appState = {
   isAuthorized: ref<boolean>(false),
   isSaving: ref<boolean>(false),
   showSystemContent: ref<boolean>(false),
-  systemContent: ref<string>('')
+  systemContent: ref<string>(''),
+  activeQuestion: ref<OpenAI.Chat.ChatCompletionMessageParam>({
+    role: 'user',
+    content: ''
+  })
 }
 
 type QueryFormState = {
@@ -155,11 +159,19 @@ const saveToNosh = async () => {
 }
 const sendQuery = () => {
   appState.isLoading.value = true
+  appState.activeQuestion.value = {
+    role: 'user',
+    content: formState.currentQuery || ''
+  }
   postData('/.netlify/functions/ai-chat', {
     chatHistory: chatHistory.value,
     newValue: formState.currentQuery
   }).then((data) => {
     appState.isLoading.value = false
+    appState.activeQuestion.value = {
+      role: 'user',
+      content: ''
+    }
     chatHistory.value = data
     formState.currentQuery = ''
     setTimeout(() => {
@@ -304,7 +316,7 @@ const pickFiles = () => {
         </div>
       </q-chat-message>
       <q-chat-message :name="x.role" v-if="x.role === 'system'" size="8" sent>
-        <q-card>
+        <q-card color="secondary">
           <q-card-section>
             <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
           </q-card-section>
@@ -320,6 +332,9 @@ const pickFiles = () => {
         </q-card>
       </q-chat-message>
     </div>
+    <q-chat-message name="user" v-if="appState.activeQuestion.value.content != ''" size="8" sent>
+      <vue-markdown :source="appState.activeQuestion.value.content" />
+    </q-chat-message>
     <div class="signature-buttons">
       <q-btn size="sm" color="secondary" label="End & Save Locally" @click="saveToFile" />
       <q-btn
