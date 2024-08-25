@@ -149,7 +149,6 @@ const saveToNosh = async () => {
   try {
     response = await fetch(uri.replace('Timeline', 'md'), {
       method: 'PUT',
-      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${appState.jwt.value}`
@@ -157,6 +156,7 @@ const saveToNosh = async () => {
       body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
     })
     try {
+      console.log('Response:', response)
       const res = await response.json()
       console.log('Received:', res)
       writeMessage('Saved to Nosh', 'success')
