@@ -146,7 +146,7 @@ const saveToNosh = async () => {
   writeMessage('Saving to Nosh...', 'success')
   let response = null
   try {
-    console.log('Saving to Nosh', uri.replace('Timeline', 'md'))
+    console.log('Saving to Nosh', uri)
     response = await fetch(uri.replace('Timeline', 'md'), {
       method: 'PUT',
       mode: 'no-cors',
