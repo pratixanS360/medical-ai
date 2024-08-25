@@ -149,6 +149,7 @@ const saveToNosh = async () => {
     console.log('Saving to Nosh', uri.replace('Timeline', 'md'))
     response = await fetch(uri.replace('Timeline', 'md'), {
       method: 'PUT',
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${appState.jwt.value}`
