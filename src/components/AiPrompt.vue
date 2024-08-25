@@ -156,20 +156,20 @@ const saveToNosh = async () => {
       },
       body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
     })
+    try {
+      const res = await response.json()
+      console.log('Received:', res)
+      writeMessage('Saved to Nosh', 'success')
+      chatHistory.value = []
+      appState.isLoading.value = false
+      appState.isModal.value = true
+    } catch (error) {
+      console.log("Couldn't parse response", response, error)
+      writeMessage('Failed to get valid response.', 'error')
+      return null
+    }
   } catch (error) {
     writeMessage('Failed to save to Nosh', 'error')
-  }
-  try {
-    const res = await response.json()
-    console.log('Received:', res)
-    writeMessage('Saved to Nosh', 'success')
-    chatHistory.value = []
-    appState.isLoading.value = false
-    appState.isModal.value = true
-  } catch (error) {
-    console.log("Couldn't parse response", response, error)
-    writeMessage('Failed to get valid response.', 'error')
-    return null
   }
 }
 const sendQuery = () => {
