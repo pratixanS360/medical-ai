@@ -88,7 +88,7 @@ const access = [
   }
 ]
 
-function showJWT(jwt: string) {
+async function showJWT(jwt: string) {
   if (!uri) {
     writeMessage('No URI found in Querystring or LocalStorage', 'error')
     return
@@ -97,7 +97,7 @@ function showJWT(jwt: string) {
   writeMessage('Loading Patient Timeline...', 'success')
   appState.isLoading.value = true
   try {
-    fetch(uri, {
+    await fetch(uri, {
       headers: {
         Authorization: `Bearer ${appState.jwt.value}`
       }
