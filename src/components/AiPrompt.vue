@@ -146,6 +146,7 @@ const saveToNosh = async () => {
   writeMessage('Saving to Nosh...', 'success')
   let response = null
   try {
+    console.log('Saving to Nosh', uri.replace('Timeline', 'md'))
     response = await fetch(uri.replace('Timeline', 'md'), {
       method: 'PUT',
       headers: {
