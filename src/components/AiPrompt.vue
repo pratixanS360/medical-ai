@@ -149,7 +149,7 @@ const saveToNosh = async () => {
       },
       body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
     })
-    const res = response.json()
+    const res = await response.json()
     console.log('Received:', res)
     writeMessage('Saved to Nosh', 'success')
     chatHistory.value = []
