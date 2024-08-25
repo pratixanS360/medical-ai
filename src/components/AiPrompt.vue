@@ -96,28 +96,32 @@ function showJWT(jwt: string) {
   appState.jwt.value = jwt
   writeMessage('Loading Patient Timeline...', 'success')
   appState.isLoading.value = true
-  fetch(uri, {
-    headers: {
-      Authorization: `Bearer ${appState.jwt.value}`
-    }
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Failed to fetch')
+  try {
+    fetch(uri, {
+      headers: {
+        Authorization: `Bearer ${appState.jwt.value}`
       }
-      return response.text()
     })
-    .then((data) => {
-      chatHistory.value.push({
-        role: 'system',
-        content: 'timeline\n\nuploaded at ' + new Date().toLocaleString + '\n\n' + data
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch')
+        }
+        return response.text()
       })
-      appState.isLoading.value = false
-      writeMessage('Patient Timeline Loaded', 'success')
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+      .then((data) => {
+        chatHistory.value.push({
+          role: 'system',
+          content: 'timeline\n\nuploaded at ' + new Date().toLocaleString + '\n\n' + data
+        })
+        appState.isLoading.value = false
+        writeMessage('Patient Timeline Loaded', 'success')
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  } catch (error) {
+    writeMessage('Failed to fetch Patient Timeline', 'error')
+  }
 }
 function showAuth() {
   appState.isAuthorized.value = true
@@ -149,12 +153,17 @@ const saveToNosh = async () => {
       },
       body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
     })
-    const res = await response.json()
-    console.log('Received:', res)
-    writeMessage('Saved to Nosh', 'success')
-    chatHistory.value = []
-    appState.isLoading.value = false
-    appState.isModal.value = true
+    try {
+      const res = await response.json()
+      console.log('Received:', res)
+      writeMessage('Saved to Nosh', 'success')
+      chatHistory.value = []
+      appState.isLoading.value = false
+      appState.isModal.value = true
+    } catch (error) {
+      writeMessage('Failed to parse JSON. Probably a timeout.', 'error')
+      return null
+    }
   } catch (error) {
     writeMessage('Failed to save to Nosh', 'error')
   }
