@@ -70,7 +70,6 @@ const handler = async (event) => {
     // Handle other POST requests (e.g., chat completions)
     try {
       let { chatHistory, newValue } = JSON.parse(event.body)
-
       chatHistory.push({
         role: 'user',
         content: newValue
@@ -88,6 +87,7 @@ const handler = async (event) => {
         body: JSON.stringify(chatHistory)
       }
     } catch (error) {
+      let chatHistory = JSON.parse(event.body)
       chatHistory.push({
         role: 'assistant',
         content: 'Assistant timed out. Consider breaking up your prompt into smaller pieces.'
