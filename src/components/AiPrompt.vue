@@ -144,10 +144,10 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
 const saveToNosh = async () => {
   appState.isLoading.value = true
   writeMessage('Saving to Nosh...', 'success')
-  let response = null
-  console.log('Saving to Nosh', uri)
+  const saveUri = uri.replace('Timeline', 'md')
+  console.log('Saving to Nosh', saveUri)
   try {
-    response = await fetch(uri.replace('Timeline', 'md'), {
+    const response = await fetch(saveUri, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
