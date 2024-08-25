@@ -111,7 +111,7 @@ function showJWT(jwt: string) {
       .then((data) => {
         chatHistory.value.push({
           role: 'system',
-          content: 'timeline\n\nuploaded at ' + new Date().toLocaleString + '\n\n' + data
+          content: 'timeline\n\nuploaded at ' + new Date().toLocaleString() + '\n\n' + data
         })
         appState.isLoading.value = false
         writeMessage('Patient Timeline Loaded', 'success')
@@ -145,8 +145,8 @@ const saveToNosh = async () => {
   appState.isLoading.value = true
   writeMessage('Saving to Nosh...', 'success')
   let response = null
+  console.log('Saving to Nosh', uri)
   try {
-    console.log('Saving to Nosh', uri)
     response = await fetch(uri.replace('Timeline', 'md'), {
       method: 'PUT',
       mode: 'no-cors',
