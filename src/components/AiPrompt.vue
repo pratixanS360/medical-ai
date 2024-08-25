@@ -140,25 +140,23 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
 const saveToNosh = async () => {
   appState.isLoading.value = true
   writeMessage('Saving to Nosh...', 'success')
-  const response = await fetch(uri.replace('Timeline', 'md'), {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${appState.jwt.value}`
-    },
-    body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
-  })
-
   try {
-    const res = await response.json()
+    const response = await fetch(uri.replace('Timeline', 'md'), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${appState.jwt.value}`
+      },
+      body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
+    })
+    const res = response.json()
     console.log('Received:', res)
     writeMessage('Saved to Nosh', 'success')
     chatHistory.value = []
     appState.isLoading.value = false
     appState.isModal.value = true
   } catch (error) {
-    writeMessage('Failed to parse JSON. Probably a timeout.', 'error')
-    return null
+    writeMessage('Failed to save to Nosh', 'error')
   }
 }
 const sendQuery = () => {
