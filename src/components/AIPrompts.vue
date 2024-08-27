@@ -174,8 +174,7 @@ const sendQuery = () => {
     }, 100)
   })
 }
-/*
- */
+
 async function uploadFile(e: Event) {
   let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {

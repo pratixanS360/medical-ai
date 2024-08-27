@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import AiPrompt from './components/AIPrompt.vue'
+import AIPrompt from './components/AIPrompt.vue'
 </script>
 
 <template>
   <div class="wrapper">
-    <AiPrompt />
+    <AIPrompt />
   </div>
 </template>
