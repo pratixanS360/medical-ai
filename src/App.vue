@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AiPrompt from './components/AiPrompt.vue'
+import AiPrompt from './components/AIPrompt.vue'
 </script>
 
 <template>

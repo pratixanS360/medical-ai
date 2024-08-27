@@ -1,28 +1,27 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
-import { reactive } from 'vue'
 import {
   QBtn,
+  QCard,
+  QCardActions,
+  QCardSection,
+  QChatMessage,
+  QCircularProgress,
+  QDialog,
   QFile,
   QIcon,
-  QChatMessage,
-  QInput,
-  QDialog,
-  QCard,
-  QCardSection,
-  QCardActions,
-  QToggle,
-  QBtnGroup,
-  QSpace,
-  QCircularProgress
+  QInput
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
+import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
+import { convertJSONtoMarkdown, getSystemMessageType, postData, pickFiles } from './utils'
 
+// Define constants and reactive variables
 const localStorageKey = 'noshuri'
-const chatHistory = ref<OpenAI.Chat.ChatCompletionMessageParam[]>([])
-const appState = {
+const chatHistory = ref<ChatHistoryItem[]>([])
+const appState: AppState = {
   editBox: ref<number[]>([]),
   userName: ref<string>('DEMOUSER'),
   message: ref<string>(''),
@@ -41,19 +40,14 @@ const appState = {
   })
 }
 
-type QueryFormState = {
-  currentQuery: string | null
-}
-type FileFormState = {
-  file: File | null
-}
-const formState = reactive(<QueryFormState>{
+const formState = reactive<QueryFormState>({
   currentQuery: null
 })
-const fileFormState = reactive(<FileFormState>{
+const fileFormState = reactive<FileFormState>({
   file: null
 })
 
+// Define helper functions
 const writeMessage = (message: string, messageType: string) => {
   appState.message.value = message
   appState.messageType.value = messageType
@@ -73,6 +67,7 @@ if (uri && uri.length > 0) {
   writeMessage('No URI found in Querystring or LocalStorage', 'error')
   uri = ''
 }
+
 const access = [
   {
     type: 'App',
@@ -123,48 +118,32 @@ async function showJWT(jwt: string) {
     writeMessage('Failed to fetch Patient Timeline', 'error')
   }
 }
+
 function showAuth() {
   appState.isAuthorized.value = true
   writeMessage('Authorized', 'success')
 }
-const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(data)
-  })
 
-  try {
-    return await response.json()
-  } catch (error) {
-    writeMessage('Failed to parse JSON. Probably a timeout.', 'error')
-    return null
-  }
-}
 const saveToNosh = async () => {
   appState.isLoading.value = true
   writeMessage('Saving to Nosh...', 'success')
-  const saveUri = uri.replace('Timeline', 'md')
-  console.log('Saving to Nosh', saveUri)
   try {
-    const response = await fetch(saveUri, {
+    const response = await fetch(uri.replace('Timeline', 'md'), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${appState.jwt.value}`
       },
-      body: JSON.stringify({ content: convertJSONtoMarkdown(chatHistory.value) })
+      body: JSON.stringify({
+        content: convertJSONtoMarkdown(chatHistory.value, appState.userName.value)
+      })
     })
     try {
-      console.log('Response:', response)
-      const res = await response.json()
-      console.log('Received:', res)
+      await response.json()
       writeMessage('Saved to Nosh', 'success')
-      chatHistory.value = []
       appState.isLoading.value = false
       appState.isModal.value = true
     } catch (error) {
-      console.log("Couldn't parse response", response, error)
       writeMessage('Failed to get valid response.', 'error')
       return null
     }
@@ -172,6 +151,7 @@ const saveToNosh = async () => {
     writeMessage('Failed to save to Nosh', 'error')
   }
 }
+
 const sendQuery = () => {
   appState.isLoading.value = true
   appState.activeQuestion.value = {
@@ -193,31 +173,6 @@ const sendQuery = () => {
       window.scrollTo(0, document.body.scrollHeight)
     }, 100)
   })
-}
-
-const convertJSONtoMarkdown = (json: OpenAI.Chat.ChatCompletionMessageParam[]) => {
-  return (
-    '### Transcript\n' +
-    json
-      .map((x) => {
-        if (x.role !== 'system') {
-          return `##### ${x.role}:\n${x.content}`
-        }
-      })
-      .join('\n') +
-    '\n\n##### ' +
-    signatureContent()
-  )
-}
-
-function getSystemMessageType(message: string) {
-  const splitpiece = message.split('\n')[0]
-  if (splitpiece.includes('timeline')) {
-    return 'timeline'
-  } else {
-    const fileInfo = JSON.parse(splitpiece)
-    return `${fileInfo.filename} uploaded.\n\n${fileInfo.size}`
-  }
 }
 
 async function uploadFile(e: Event) {
@@ -250,44 +205,39 @@ async function uploadFile(e: Event) {
   }
 }
 
-const signatureContent = () => {
-  return `Signed by: ${appState.userName.value} Date: ${new Date().toDateString()}`
-}
-
 const editMessage = (idx: number) => {
   appState.editBox.value.push(idx)
   return
 }
+
 const saveToFile = () => {
-  const blob = new Blob([convertJSONtoMarkdown(chatHistory.value)], { type: 'text/markdown' })
+  const blob = new Blob([convertJSONtoMarkdown(chatHistory.value, appState.userName.value)], {
+    type: 'text/markdown'
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = 'transcript.md'
   a.click()
   URL.revokeObjectURL(url)
-  closeSession()
 }
+
 const closeNoSave = () => {
   chatHistory.value = []
   appState.isModal.value = false
   closeSession()
 }
+
 const closeSession = () => {
   localStorage.removeItem('gnap')
   sessionStorage.removeItem(localStorageKey)
   window.close()
 }
+
 const saveMessage = (idx: number, content: string) => {
   chatHistory.value[idx].content = content
   appState.editBox.value.splice(appState.editBox.value.indexOf(idx), 1)
   return
-}
-const pickFiles = () => {
-  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
-  if (fileInput) {
-    fileInput.click()
-  }
 }
 </script>
 
