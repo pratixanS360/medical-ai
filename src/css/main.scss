@@ -8,25 +8,37 @@
     }
   }
 }
+
 .bottom-toolbar {
+  background: white;
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  padding-top: 20px;
 }
+
 .prompt {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   background-color: white;
-  &.true * {
-    opacity: 0.5;
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 1em 0;
   }
   .q-input {
     flex-basis: 100%;
+    order: 1;
   }
   button {
-    margin-left: 0.5em;
+    margin: 1em 0 0 0.5em;
+    order: 2;
+    height: 54px;
   }
   button.blue {
     background-color: #1976d2;
@@ -34,13 +46,15 @@
     border: none;
     outline: none;
     cursor: pointer;
-    line-height: 1.715em;
-    padding: 6px 0;
+    flex: 1;
+    padding: 5px 16px;
+    height: 55px;
     i {
       display: none;
     }
   }
 }
+
 .signature-buttons {
   display: flex;
   justify-content: flex-end;
@@ -61,14 +75,8 @@
 .signature .inner {
   justify-content: flex-end;
 }
-@media (min-width: 768px) {
-  .prompt .inner,
-  .signature .inner {
-    display: flex;
-  }
-}
 
-.file-upload-area {
+.q-file {
   opacity: 0;
   width: 0;
   height: 0;
@@ -105,6 +113,24 @@
     opacity: 1;
   }
 }
+
+.loading-pane {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+  &.true {
+    display: flex;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+}
+
 .system-content {
   line-height: 1.4;
   h1 {
@@ -167,19 +193,33 @@
     font-size: 1em;
   }
 }
-.loading-pane {
-  display: none;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 999;
-  align-items: center;
-  justify-content: center;
-  &.true {
+
+@media screen and (min-width: 768px) {
+  .prompt {
+    .inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    button {
+      white-space: nowrap;
+      margin-top: 0;
+      &:first-child {
+        order: 0;
+      }
+      &.blue {
+        flex: 0;
+        height: 54px;
+      }
+    }
+    .q-input {
+      order: auto;
+      margin-right: 0.25em;
+    }
+  }
+  .prompt .inner,
+  .signature .inner {
     display: flex;
-    animation: fadeIn 0.3s ease-in-out;
   }
 }

@@ -9,21 +9,19 @@ import {
   QCardSection,
   QChatMessage,
   QCircularProgress,
-  QDialog,
   QFile,
   QIcon,
   QInput
 } from 'quasar'
 import { GNAP } from 'vue3-gnap'
+import PopUp from './PopUp.vue'
 import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
-import { convertJSONtoMarkdown, getSystemMessageType, postData, pickFiles } from './utils'
 
-// Define constants and reactive variables
 const localStorageKey = 'noshuri'
 const chatHistory = ref<ChatHistoryItem[]>([])
 const appState: AppState = {
   editBox: ref<number[]>([]),
-  userName: ref<string>('DEMOUSER'),
+  userName: ref<string>('Demo User'),
   message: ref<string>(''),
   messageType: ref<string>(''),
   isLoading: ref<boolean>(false),
@@ -32,13 +30,14 @@ const appState: AppState = {
   jwt: ref<string>(''),
   isAuthorized: ref<boolean>(false),
   isSaving: ref<boolean>(false),
-  showSystemContent: ref<boolean>(false),
-  systemContent: ref<string>(''),
+  popupContent: ref<string>(''),
+  popupContentFunction: ref<Function>(() => {}),
   activeQuestion: ref<OpenAI.Chat.ChatCompletionMessageParam>({
     role: 'user',
     content: ''
   })
 }
+const popupRef = ref<InstanceType<typeof PopUp> | null>(null)
 
 const formState = reactive<QueryFormState>({
   currentQuery: null
@@ -47,7 +46,13 @@ const fileFormState = reactive<FileFormState>({
   file: null
 })
 
-// Define helper functions
+// Helper functions
+const showPopup = () => {
+  if (popupRef.value) {
+    popupRef.value.openPopup()
+  }
+}
+
 const writeMessage = (message: string, messageType: string) => {
   appState.message.value = message
   appState.messageType.value = messageType
@@ -57,6 +62,56 @@ const writeMessage = (message: string, messageType: string) => {
   }, 5000)
 }
 
+const convertJSONtoMarkdown = (json: ChatHistoryItem[], username: string): string => {
+  return (
+    '### Transcript\n' +
+    json
+      .map((x) => {
+        return `##### ${x.role}:\n${x.role !== 'system' ? x.content : getSystemMessageType(x.content)}`
+      })
+      .join('\n') +
+    '\n\n##### ' +
+    signatureContent(username)
+  )
+}
+
+const getSystemMessageType = (message: string): string => {
+  const splitpiece = message.split('\n')[0]
+  if (splitpiece.includes('timeline')) {
+    return 'timeline'
+  } else {
+    const fileInfo = JSON.parse(splitpiece)
+    return `${fileInfo.filename} uploaded.\n\n${fileInfo.size}`
+  }
+}
+
+const signatureContent = (username: string): string => {
+  return `Signed by: ${username} Date: ${new Date().toDateString()}`
+}
+
+const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data)
+  })
+
+  try {
+    return await response.json()
+  } catch (error) {
+    console.error('Failed to parse JSON. Probably a timeout.')
+    return null
+  }
+}
+
+const pickFiles = () => {
+  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+  if (fileInput) {
+    fileInput.click()
+  }
+}
+
+// Get URI from querystring or local storage
 const urlParams = new URLSearchParams(window.location.search)
 let uri = urlParams.get('uri')
 if (uri && uri.length > 0) {
@@ -68,6 +123,7 @@ if (uri && uri.length > 0) {
   uri = ''
 }
 
+//Create access object for GNAP
 const access = [
   {
     type: 'App',
@@ -83,6 +139,13 @@ const access = [
   }
 ]
 
+// Confirm authorization to Trustee
+function showAuth() {
+  appState.isAuthorized.value = true
+  writeMessage('Authorized', 'success')
+}
+
+// Download the patient timeline from Nosh when JWT is received
 async function showJWT(jwt: string) {
   if (!uri) {
     writeMessage('No URI found in Querystring or LocalStorage', 'error')
@@ -119,11 +182,7 @@ async function showJWT(jwt: string) {
   }
 }
 
-function showAuth() {
-  appState.isAuthorized.value = true
-  writeMessage('Authorized', 'success')
-}
-
+// Save the transcript to Nosh
 const saveToNosh = async () => {
   appState.isLoading.value = true
   writeMessage('Saving to Nosh...', 'success')
@@ -142,7 +201,9 @@ const saveToNosh = async () => {
       await response.json()
       writeMessage('Saved to Nosh', 'success')
       appState.isLoading.value = false
-      appState.isModal.value = true
+      appState.popupContent.value = 'Session saved to Nosh. Close this window to end the session.'
+      appState.popupContentFunction.value = closeSession
+      showPopup()
     } catch (error) {
       writeMessage('Failed to get valid response.', 'error')
       return null
@@ -152,6 +213,7 @@ const saveToNosh = async () => {
   }
 }
 
+// Send query to OpenAI
 const sendQuery = () => {
   appState.isLoading.value = true
   appState.activeQuestion.value = {
@@ -175,6 +237,7 @@ const sendQuery = () => {
   })
 }
 
+// Upload file to System Content
 async function uploadFile(e: Event) {
   let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
@@ -205,8 +268,15 @@ async function uploadFile(e: Event) {
   }
 }
 
+// Edit Chat Message
 const editMessage = (idx: number) => {
   appState.editBox.value.push(idx)
+  return
+}
+
+const saveMessage = (idx: number, content: string) => {
+  chatHistory.value[idx].content = content
+  appState.editBox.value.splice(appState.editBox.value.indexOf(idx), 1)
   return
 }
 
@@ -233,22 +303,14 @@ const closeSession = () => {
   sessionStorage.removeItem(localStorageKey)
   window.close()
 }
-
-const saveMessage = (idx: number, content: string) => {
-  chatHistory.value[idx].content = content
-  appState.editBox.value.splice(appState.editBox.value.indexOf(idx), 1)
-  return
-}
 </script>
 
 <template>
-  <div class="file-upload-area">
-    <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
-      <template v-slot:prepend>
-        <q-icon name="attach_file"></q-icon>
-      </template>
-    </q-file>
-  </div>
+  <q-file v-model="fileFormState.file" filled counter multiple append @input="uploadFile">
+    <template v-slot:prepend>
+      <q-icon name="attach_file"></q-icon>
+    </template>
+  </q-file>
   <div class="chat-area" id="chat-area">
     <div v-for="(x, idx) in chatHistory" :key="idx">
       <q-chat-message
@@ -295,8 +357,11 @@ const saveMessage = (idx: number, content: string) => {
             <q-btn
               label="View"
               @click="
-                (appState.showSystemContent.value = true),
-                  (appState.systemContent.value = x.content)
+                (appState.popupContent.value = x.content
+                  .split('\n')
+                  .splice(1, x.content.split('\n').length - 1)
+                  .join('\n')),
+                  showPopup()
               "
             ></q-btn>
           </q-card-actions>
@@ -306,8 +371,8 @@ const saveMessage = (idx: number, content: string) => {
     <q-chat-message name="user" v-if="appState.activeQuestion.value.content != ''" size="8" sent>
       <vue-markdown :source="appState.activeQuestion.value.content" />
     </q-chat-message>
-    <div class="signature-buttons">
-      <q-btn size="sm" color="secondary" label="End & Save Locally" @click="saveToFile" />
+    <div class="signature-buttons" v-if="chatHistory.length">
+      <q-btn size="sm" color="secondary" label="Save Locally" @click="saveToFile" />
       <q-btn
         size="sm"
         color="secondary"
@@ -318,9 +383,6 @@ const saveMessage = (idx: number, content: string) => {
     </div>
   </div>
   <div class="bottom-toolbar">
-    <div class="signature">
-      <div class="inner"></div>
-    </div>
     <div class="prompt">
       <div class="inner">
         <q-btn @click="pickFiles" flat icon="attach_file" />
@@ -331,17 +393,16 @@ const saveMessage = (idx: number, content: string) => {
           @keyup.enter="sendQuery"
         ></q-input>
         <q-btn color="primary" label="Send" @click="sendQuery" size="sm" />
-        <div v-if="!appState.isAuthorized.value">
-          <GNAP
-            name="gnap-btn"
-            helper="blue small"
-            @on-authorized="showAuth"
-            @jwt="showJWT"
-            :access="access"
-            server="https://shihjay.xyz/api/as"
-            label="Connect to NOSH"
-          />
-        </div>
+        <GNAP
+          v-if="!appState.isAuthorized.value"
+          name="gnap-btn"
+          helper="blue small"
+          @on-authorized="showAuth"
+          @jwt="showJWT"
+          :access="access"
+          server="https://shihjay.xyz/api/as"
+          label="Connect to NOSH"
+        />
       </div>
     </div>
     <div :class="'message ' + appState.messageType.value">
@@ -359,32 +420,10 @@ const saveMessage = (idx: number, content: string) => {
       ></q-circular-progress>
     </div>
   </div>
-  <q-dialog v-model="appState.isModal.value">
-    <q-card>
-      <q-card-section>
-        <p>Record Saved to Nosh</p>
-      </q-card-section>
-      <q-card-actions align="right">
-        <q-btn label="Ok" solid @click="closeSession"></q-btn>
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
-  <q-dialog v-model="appState.showSystemContent.value">
-    <q-card>
-      <q-card-section>
-        <vue-markdown
-          class="system-content"
-          :source="
-            appState.systemContent.value
-              .split('\n')
-              .splice(1, appState.systemContent.value.split('\n').length - 1)
-              .join('\n')
-          "
-        />
-      </q-card-section>
-      <q-card-actions align="right">
-        <q-btn label="Close" solid @click="appState.showSystemContent.value = false"></q-btn>
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+  <PopUp
+    ref="popupRef"
+    :content="appState.popupContent.value"
+    button-text="Close"
+    :on-close="() => appState.popupContentFunction.value()"
+  />
 </template>

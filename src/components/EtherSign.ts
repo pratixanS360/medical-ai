@@ -1,5 +1,7 @@
 import { ethers } from 'ethers'
 
+// This code is not part of the app but could be integrated as a signature mechanism
+
 declare global {
   interface Window {
     ethereum: ethers.Provider & {

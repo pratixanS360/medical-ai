@@ -14,8 +14,8 @@ export interface AppState {
   jwt: Ref<string>
   isAuthorized: Ref<boolean>
   isSaving: Ref<boolean>
-  showSystemContent: Ref<boolean>
-  systemContent: Ref<string>
+  popupContent: Ref<string>
+  popupContentFunction: Ref<Function>
   activeQuestion: Ref<OpenAI.Chat.ChatCompletionMessageParam>
 }
 
