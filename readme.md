@@ -1,6 +1,6 @@
 # Medical AI Assistant Demo
 
-This demonstration showcases the integration of OpenAI with [Trustee® Community](#software-repositories) and [NOSH](#software-repositories), enabling AI queries using a health Timeline as context. The demo utilizes the [GNAP (Grant Negotiation and Authorization Protocol)](https://ldapwiki.com/wiki/Wiki.jsp?page=Grant%20Negotiation%20and%20Authorization%20Protocol) for secure connections between components.
+This demonstration showcases the integration of OpenAI with [Trustee® Community](#software-repositories) and [NOSH](#software-repositories), enabling AI queries using a health Timeline as context. The demo utilizes the [GNAP (Grant Negotiation and Authorization Protocol)](https://ldapwiki.com/wiki/Wiki.jsp?page=Grant%20Negotiation%20and%20Authorization%20Protocol) for secure connections between components. You can view a [Demo Video Here](https://www.youtube.com/watch?v=V16lfEMN2eA&ab_channel=AdrianGropper).
 
 ## Overview
 
@@ -24,7 +24,7 @@ Make sure to set these variables before running the MAIA App.
 
 ### Register for Challenge
 
-1. Register using the [registration form](https://forms.gle/UzVJkqoibtPyEzc16).
+1. Register using the [registration form](https://pages.pathcheck.org/patient-journey-challenge).
    This step is necessary to participate in the challenge and receive updates.
 
 ### Set up a patient record
