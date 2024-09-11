@@ -4,7 +4,7 @@ This is a demonstration of pairing OpenAI with Trustee Community and NOSH for ma
 
 ## Challenge
 
-1.  Register using the [form](https://forms.gle/UzVJkqoibtPyEzc16)\
+1.  Register using the [form](https://forms.gle/UzVJkqoibtPyEzc16)
 
 2.  Go to [https://trustee.health](https://trustee.health/)
 3.  Use the New to Trustee? link to Create your Trustee and Passkey
