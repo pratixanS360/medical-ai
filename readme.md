@@ -36,7 +36,7 @@ Make sure to set these variables before running the MAIA App.
    This initiates the process of creating your Trustee account.
 
 3. Verify your email address.
-   You will receive an email with a verification link. Click on it to confirm your email.
+   You will receive an email with a verification code.
 
 4. Create a passkey for login.
    Passkeys provide a secure, passwordless login method.
@@ -53,6 +53,8 @@ Make sure to set these variables before running the MAIA App.
 7. Click the Sync button (two circular arrows) and select one of the Synthetic Mass patients to import into NOSH.
    This step populates your record with sample health data for testing purposes.
    ![Sync button](https://github.com/abeuscher/vue-ai-example/blob/main/public/ss-1.png)
+
+   ![Select Synthetic Record](https://github.com/abeuscher/vue-ai-example/blob/main/public/ss-4.png)
 
 8. Click the Import Everything button (two up/down arrows) to add the contents to your health records Timeline.
    This action imports all available data from the selected Synthetic Mass patient into your Timeline.
