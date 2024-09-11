@@ -41,7 +41,8 @@ Make sure to set these variables before running the MAIA App.
 
 ### Try MAIA
 
-1. Select "Launch MAIA" from side menu.![Launch MAIA](https://github.com/abeuscher/vue-ai-example/blob/main/public/ss-3.png)
+1. Select "Launch MAIA" from side menu.
+   ![Launch MAIA](https://github.com/abeuscher/vue-ai-example/blob/main/public/ss-3.png)
 2. Log into Trustee from MAIA.
 3. Ask AI some questions about your Patient Timeline.
 
