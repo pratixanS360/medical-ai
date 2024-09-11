@@ -1,6 +1,6 @@
-# HIE Open AI Demo
+# Medical AI Assistant Demo
 
-This demonstration showcases the integration of OpenAI with Trustee Community and NOSH, enabling AI queries using a health Timeline as context. The demo utilizes the [GNAP (Grant Negotiation and Authorization Protocol)](https://ldapwiki.com/wiki/Wiki.jsp?page=Grant%20Negotiation%20and%20Authorization%20Protocol) for secure connections between components.
+This demonstration showcases the integration of OpenAI with Trustee® Community and NOSH, enabling AI queries using a health Timeline as context. The demo utilizes the [GNAP (Grant Negotiation and Authorization Protocol)](https://ldapwiki.com/wiki/Wiki.jsp?page=Grant%20Negotiation%20and%20Authorization%20Protocol) for secure connections between components.
 
 ## Overview
 
@@ -114,7 +114,7 @@ Make sure to set these variables before running the MAIA App.
 - GNAP Client: [https://github.com/abeuscher/vue-ai-example](https://github.com/abeuscher/vue-ai-example)
 - GNAP Client Support: [https://github.com/hieofOne/vue3-gnap](https://github.com/hieofOne/vue3-gnap)
 
-For further instructions, details, and challenge specifics, please visit: [Challenge Details](http://example.com/challenge-details)
+For further instructions, details, and challenge specifics, please visit: [Challenge Details](https://pages.pathcheck.org/patient-journey-challenge)
 
 ## Contact
 
