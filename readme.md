@@ -18,23 +18,20 @@ This is a demonstration of pairing OpenAI with Trustee Community and NOSH for ma
 8.  Create your own MAIA on GitHub and launch it instead of the demo MAIA provided ([instructions TBD](http://tbd/))
 9.  Submit a video and any modified GitHub code for judging
 
-Software Repos:
+## Resources
 
-- Patient-Centered Domain
+### Software Repos:
+
+#### Patient-Centered Domain
 
 - GNAP Resource Server: <https://github.com/shihjay2/nosh3
 - GNAP Authorization Server: <https://github.com/HIEofOne/Trustee-Community
 - W3C Verifiable Credentials and SMART on FHIR Support: <https://github.com/HIEofOne/Trustee-Proxy
 
-- MAIA Domain
+#### MAIA Domain
 
 - GNAP Client: <https://github.com/abeuscher/vue-ai-example
-
 - GNAP Client Support: <https://github.com/hieofOne/vue3-gnap
-
-### Video:
-
-https://youtu.be/V16lfEMN2eA
 
 ### Contact
 
