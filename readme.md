@@ -64,6 +64,7 @@ Make sure to set these variables before running the MAIA App.
 
 1. Select "Launch MAIA" from side menu.
    This option is located in the main navigation menu of your NOSH interface.
+
    ![Launch MAIA](https://github.com/abeuscher/vue-ai-example/blob/main/public/ss-3.png)
 
 2. Log into Trustee from MAIA.
@@ -79,6 +80,7 @@ Make sure to set these variables before running the MAIA App.
 
 2. When you have a candidate, you can edit your MAIA URL in NOSH in order to test it against the app.
    This step enables you to integrate your custom MAIA version with the NOSH system for testing. Note: This change is made locally, so if you want to test on a separate machine, you will need to edit the MAIA url there as well. The data is saved to localStorage.
+
    ![Change MAIA URL](https://github.com/abeuscher/vue-ai-example/blob/main/public/ss-5.jpg)
 
 ## Participation Guidelines
