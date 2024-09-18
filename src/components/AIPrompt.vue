@@ -123,6 +123,8 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
   if (!validateStringSize(JSON.stringify(data))) {
     writeMessage('Message size is too large. Limit is ' + MAX_SIZE, 'error')
     return
+  } else {
+    console.log('Message size is within limits')
   }
   const response = await fetch(url, {
     method: 'POST',
