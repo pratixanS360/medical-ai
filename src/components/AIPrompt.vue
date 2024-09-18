@@ -120,6 +120,7 @@ function validateStringSize(inputString: string) {
   return byteSize > MAX_SIZE
 }
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
+  console.log('Posting data to ' + url)
   if (!validateStringSize(JSON.stringify(data))) {
     writeMessage('Message size is too large. Limit is ' + MAX_SIZE, 'error')
     return
