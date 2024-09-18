@@ -1,6 +1,5 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
-import { Buffer } from 'buffer'
 import { ref, reactive } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import {
@@ -69,7 +68,7 @@ const convertJSONtoMarkdown = (json: ChatHistoryItem[], username: string): strin
     '### Transcript\n' +
     json
       .map((x) => {
-        return `##### ${x.role}:\n${x.role !== 'system' ? x.content : getSystemMessageType(x.content)}`
+        return `##### ${x.role}:\n${x.role !== 'system' ? x.content : getSystemMessageType(x.content as string)}`
       })
       .join('\n') +
     '\n\n##### ' +
@@ -90,10 +89,16 @@ const getSystemMessageType = (message: string): string => {
 const signatureContent = (username: string): string => {
   return `Signed by: ${username} Date: ${new Date().toDateString()}`
 }
-function validateStringSize(
-  inputString: string | Buffer | NodeJS.ArrayBufferView | ArrayBuffer | SharedArrayBuffer
-) {
-  return Buffer.byteLength(inputString, 'utf8') > MAX_SIZE
+function validateStringSize(inputString: string) {
+  // Encode the string to UTF-8 and get the byte length
+  const encoder = new TextEncoder()
+  const byteSize = encoder.encode(inputString).length
+
+  // Define 2MB size in bytes
+  const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
+
+  // Check if the byte size exceeds 2MB
+  return byteSize > MAX_SIZE
 }
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   if (!validateStringSize(JSON.stringify(data))) {
@@ -371,15 +376,18 @@ const closeSession = () => {
       <q-chat-message :name="x.role" v-if="x.role === 'system'" size="8" sent>
         <q-card color="secondary">
           <q-card-section>
-            <vue-markdown :source="getSystemMessageType(x.content)" class="attachment-message" />
+            <vue-markdown
+              :source="getSystemMessageType(x.content as string)"
+              class="attachment-message"
+            />
           </q-card-section>
           <q-card-actions>
             <q-btn
               label="View"
               @click="
-                (appState.popupContent.value = x.content
+                (appState.popupContent.value = (x.content as string)
                   .split('\n')
-                  .splice(1, x.content.split('\n').length - 1)
+                  .splice(1, (x.content as string).split('\n').length - 1)
                   .join('\n')),
                   showPopup()
               "
