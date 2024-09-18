@@ -100,9 +100,6 @@ function checkTimelineSizeAndReset(timelineString: string) {
   const estimatedTokens = estimateTokenCount(timelineString)
 
   if (estimatedTokens > tokenLimit) {
-    // Log an error to inform the user
-    console.error('Timeline size exceeds the allowable token limit.')
-
     // Return error to user
     return {
       error: true,
@@ -118,13 +115,13 @@ function checkTimelineSizeAndReset(timelineString: string) {
 }
 
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
-  console.log('Posting data to ' + url)
-  if (checkTimelineSizeAndReset(JSON.stringify(chatHistory.value)).error) {
-    writeMessage('Timeline too large. Please restart the app.', 'error')
+  const timelineCheck = checkTimelineSizeAndReset(JSON.stringify(chatHistory.value))
+  if (timelineCheck.error) {
+    writeMessage(timelineCheck.message, 'error')
     chatHistory.value = []
     localStorage.removeItem('gnap')
     sessionStorage.removeItem(localStorageKey)
-    return null
+    return false
   }
   const response = await fetch(url, {
     method: 'POST',
@@ -261,6 +258,11 @@ const sendQuery = () => {
     chatHistory: chatHistory.value,
     newValue: formState.currentQuery
   }).then((data) => {
+    if (!data) {
+      writeMessage('Failed to get response from AI', 'error')
+      appState.isLoading.value = false
+      return
+    }
     appState.isLoading.value = false
     appState.activeQuestion.value = {
       role: 'user',
