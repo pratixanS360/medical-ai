@@ -17,6 +17,7 @@ import { GNAP } from 'vue3-gnap'
 import PopUp from './PopUp.vue'
 import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
 
+const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 const localStorageKey = 'noshuri'
 const chatHistory = ref<ChatHistoryItem[]>([])
 const appState: AppState = {
@@ -88,8 +89,16 @@ const getSystemMessageType = (message: string): string => {
 const signatureContent = (username: string): string => {
   return `Signed by: ${username} Date: ${new Date().toDateString()}`
 }
-
+function validateStringSize(
+  inputString: string | Buffer | NodeJS.ArrayBufferView | ArrayBuffer | SharedArrayBuffer
+) {
+  return Buffer.byteLength(inputString, 'utf8') > MAX_SIZE
+}
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
+  if (!validateStringSize(JSON.stringify(data))) {
+    writeMessage('Message size is too large. Limit is ' + MAX_SIZE, 'error')
+    return
+  }
   const response = await fetch(url, {
     method: 'POST',
     headers,
@@ -175,7 +184,8 @@ async function showJWT(jwt: string) {
         writeMessage('Patient Timeline Loaded', 'success')
       })
       .catch((error) => {
-        console.error(error)
+        console.error('Fatal Error. Closing Session.', error)
+        closeSession()
       })
   } catch (error) {
     writeMessage('Failed to fetch Patient Timeline', 'error')
@@ -236,12 +246,21 @@ const sendQuery = () => {
     }, 100)
   })
 }
-
+function validateFileSize(file: File) {
+  if (!file) {
+    return false
+  }
+  return file.size <= MAX_SIZE
+}
 // Upload file to System Content
 async function uploadFile(e: Event) {
   let fileInput = e.target as HTMLInputElement
   if (!fileInput.files || fileInput.files.length === 0) {
     writeMessage('No file selected', 'error')
+    return
+  }
+  if (!validateFileSize(fileInput.files[0])) {
+    writeMessage('File size is too large. Limit is ' + MAX_SIZE, 'error')
     return
   }
   const formData = new FormData()
