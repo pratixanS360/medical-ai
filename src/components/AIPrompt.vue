@@ -115,11 +115,11 @@ function validateStringSize(inputString: string) {
     const encoder = new TextEncoder()
     const encodedString = encoder.encode(inputString)
 
-    // Log the type of encodedString to confirm it's a Uint8Array
-    console.log('Encoded string:', encodedString)
-
     // Get the byte length of the encoded string
     const byteSize = encodedString.byteLength
+
+    // Log the byteSize to verify
+    console.log('Byte size:', byteSize)
 
     // Define 2MB size in bytes
     const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
@@ -127,10 +127,11 @@ function validateStringSize(inputString: string) {
     // Check if the byte size exceeds 2MB
     return byteSize > MAX_SIZE
   } catch (error) {
-    console.error('Error while calculating size:', error)
+    console.error('Error calculating size:', error)
     return false
   }
 }
+
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   console.log('Posting data to ' + url)
   if (!validateStringSize(JSON.stringify(data))) {
