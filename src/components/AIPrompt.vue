@@ -90,9 +90,12 @@ const signatureContent = (username: string): string => {
   return `Signed by: ${username} Date: ${new Date().toDateString()}`
 }
 function validateStringSize(inputString: string) {
-  // Encode the string to UTF-8 and get the byte length
+  // Encode the string to UTF-8
   const encoder = new TextEncoder()
-  const byteSize = encoder.encode(inputString).length
+  const encodedString = encoder.encode(inputString)
+
+  // Get the byte length of the encoded string
+  const byteSize = encodedString.length
 
   // Define 2MB size in bytes
   const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
