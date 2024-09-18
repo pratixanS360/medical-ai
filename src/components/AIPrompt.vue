@@ -111,23 +111,36 @@ function utf8ByteSize(inputString: string) {
 
 function validateStringSize(inputString: string) {
   try {
-    // Encode the string to UTF-8
-    const encoder = new TextEncoder()
-    const encodedString = encoder.encode(inputString)
+    // Validate input is actually a string
+    if (typeof inputString !== 'string') {
+      throw new Error('Invalid input: expected a string.')
+    }
 
-    // Get the byte length of the encoded string
-    const byteSize = encodedString.byteLength
-
-    // Log the byteSize to verify
-    console.log('Byte size:', byteSize)
+    // Manually calculate the byte size of the string
+    let byteSize = 0
+    for (let i = 0; i < inputString.length; i++) {
+      const charCode = inputString.charCodeAt(i)
+      if (charCode <= 0x7f) {
+        byteSize += 1 // 1 byte for ASCII
+      } else if (charCode <= 0x7ff) {
+        byteSize += 2 // 2 bytes for characters 128-2047
+      } else if (charCode <= 0xffff) {
+        byteSize += 3 // 3 bytes for characters 2048-65535
+      } else {
+        byteSize += 4 // 4 bytes for characters above 65535
+      }
+    }
 
     // Define 2MB size in bytes
     const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
 
+    // Log byte size for debugging
+    console.log('Calculated byte size:', byteSize)
+
     // Check if the byte size exceeds 2MB
     return byteSize > MAX_SIZE
   } catch (error) {
-    console.error('Error calculating size:', error)
+    console.error('Error:', error.message)
     return false
   }
 }
