@@ -89,13 +89,29 @@ const getSystemMessageType = (message: string): string => {
 const signatureContent = (username: string): string => {
   return `Signed by: ${username} Date: ${new Date().toDateString()}`
 }
-function validateStringSize(inputString: string) {
-  // Encode the string to UTF-8
-  const encoder = new TextEncoder()
-  const encodedString = encoder.encode(inputString)
+function utf8ByteSize(inputString) {
+  let byteSize = 0
 
-  // Get the byte length of the encoded string
-  const byteSize = encodedString.length
+  for (let i = 0; i < inputString.length; i++) {
+    const charCode = inputString.charCodeAt(i)
+
+    if (charCode < 0x80) {
+      byteSize += 1
+    } else if (charCode < 0x800) {
+      byteSize += 2
+    } else if (charCode < 0x10000) {
+      byteSize += 3
+    } else {
+      byteSize += 4
+    }
+  }
+
+  return byteSize
+}
+
+function validateStringSize(inputString: string) {
+  // Get the byte length of the input string
+  const byteSize = utf8ByteSize(inputString)
 
   // Define 2MB size in bytes
   const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
