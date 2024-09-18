@@ -89,65 +89,43 @@ const getSystemMessageType = (message: string): string => {
 const signatureContent = (username: string): string => {
   return `Signed by: ${username} Date: ${new Date().toDateString()}`
 }
-function utf8ByteSize(inputString: string) {
-  let byteSize = 0
-
-  for (let i = 0; i < inputString.length; i++) {
-    const charCode = inputString.charCodeAt(i)
-
-    if (charCode < 0x80) {
-      byteSize += 1
-    } else if (charCode < 0x800) {
-      byteSize += 2
-    } else if (charCode < 0x10000) {
-      byteSize += 3
-    } else {
-      byteSize += 4
-    }
-  }
-
-  return byteSize
+// Function to estimate token count based on string length (rough estimate)
+function estimateTokenCount(text: string) {
+  const averageTokenLength = 4 // Average length of a token in characters
+  return Math.ceil(text.length / averageTokenLength)
 }
 
-function validateStringSize(inputString: string) {
-  try {
-    // Validate input is actually a string
-    if (typeof inputString !== 'string') {
-      throw new Error('Invalid input: expected a string.')
+function checkTimelineSizeAndReset(timelineString: string) {
+  const tokenLimit = 4096 // Adjust based on the model
+  const estimatedTokens = estimateTokenCount(timelineString)
+
+  if (estimatedTokens > tokenLimit) {
+    // Log an error to inform the user
+    console.error('Timeline size exceeds the allowable token limit.')
+
+    // Return error to user
+    return {
+      error: true,
+      message: 'The timeline is too large to submit. Please restart the app.'
     }
-
-    // Manually calculate the byte size of the string
-    let byteSize = 0
-    for (let i = 0; i < inputString.length; i++) {
-      const charCode = inputString.charCodeAt(i)
-      if (charCode <= 0x7f) {
-        byteSize += 1 // 1 byte for ASCII
-      } else if (charCode <= 0x7ff) {
-        byteSize += 2 // 2 bytes for characters 128-2047
-      } else if (charCode <= 0xffff) {
-        byteSize += 3 // 3 bytes for characters 2048-65535
-      } else {
-        byteSize += 4 // 4 bytes for characters above 65535
-      }
+  } else {
+    // Proceed with submitting the timeline as part of chatHistory
+    return {
+      error: false,
+      message: 'Timeline is within limits.'
     }
-
-    // Define 2MB size in bytes
-    const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
-
-    // Log byte size for debugging
-    console.log('Calculated byte size:', byteSize)
-
-    // Check if the byte size exceeds 2MB
-    return byteSize > MAX_SIZE
-  } catch (error) {
-    console.error('Error:', error.message)
-    return false
   }
 }
 
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   console.log('Posting data to ' + url)
-
+  if (checkTimelineSizeAndReset(JSON.stringify(chatHistory.value)).error) {
+    writeMessage('Timeline too large. Please restart the app.', 'error')
+    chatHistory.value = []
+    localStorage.removeItem('gnap')
+    sessionStorage.removeItem(localStorageKey)
+    return null
+  }
   const response = await fetch(url, {
     method: 'POST',
     headers,
