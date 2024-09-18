@@ -110,18 +110,35 @@ function utf8ByteSize(inputString: string) {
 }
 
 function validateStringSize(inputString: string) {
-  // Get the byte length of the input string
-  const byteSize = utf8ByteSize(inputString)
+  try {
+    // Encode the string to UTF-8
+    const encoder = new TextEncoder()
+    const encodedString = encoder.encode(inputString)
 
-  // Define 2MB size in bytes
-  const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
+    // Log the type of encodedString to confirm it's a Uint8Array
+    console.log('Encoded string:', encodedString)
 
-  // Check if the byte size exceeds 2MB
-  return byteSize > MAX_SIZE
+    // Get the byte length of the encoded string
+    const byteSize = encodedString.byteLength
+
+    // Define 2MB size in bytes
+    const MAX_SIZE = 2 * 1024 * 1024 // 2MB in bytes
+
+    // Check if the byte size exceeds 2MB
+    return byteSize > MAX_SIZE
+  } catch (error) {
+    console.error('Error while calculating size:', error)
+    return false
+  }
 }
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   console.log('Posting data to ' + url)
-
+  if (!validateStringSize(JSON.stringify(data))) {
+    writeMessage('Message size is too large. Limit is ' + MAX_SIZE, 'error')
+    return
+  } else {
+    console.log('Message size is within limits')
+  }
   const response = await fetch(url, {
     method: 'POST',
     headers,
