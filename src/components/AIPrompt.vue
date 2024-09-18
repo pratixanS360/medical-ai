@@ -1,5 +1,6 @@
 <script setup lang="ts" --module="esnext">
 import OpenAI from 'openai'
+import { Buffer } from 'buffer'
 import { ref, reactive } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 import {
