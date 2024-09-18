@@ -73,6 +73,15 @@ Make sure to set these variables before running the MAIA App.
 3. Ask AI some questions about your Patient Timeline.
    Explore the capabilities of the AI by asking questions related to the imported health data.
 
+### Troubleshooting
+
+If the MAIA app experiences a failure, you may need to delete the cookies it sets during its function. MAIA sets two values:
+
+- In SessionStorage, the value "gnap"
+- In LocalStorage, the value "noshuri"
+
+This should help the app to relaunch properly from NOSH.
+
 ### Change MAIA
 
 1. The repo can be forked and added. Please see requirements above.
