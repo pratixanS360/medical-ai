@@ -101,6 +101,7 @@ function checkTimelineSizeAndReset(timelineString: string) {
   console.log('Estimated tokens:', estimatedTokens)
   if (estimatedTokens > tokenLimit) {
     // Return error to user
+    console.log('Timeline is too large to submit. Please restart the app.')
     return {
       error: true,
       message: 'The timeline is too large to submit. Please restart the app.'
