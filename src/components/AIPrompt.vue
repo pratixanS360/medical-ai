@@ -121,6 +121,9 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
     chatHistory.value = []
     localStorage.removeItem('gnap')
     sessionStorage.removeItem(localStorageKey)
+    appState.popupContent.value =
+      'Timeline size caused an error. Please restart the app. Close this window to clear session.'
+    appState.popupContentFunction.value = closeSession
     return false
   }
   const response = await fetch(url, {
