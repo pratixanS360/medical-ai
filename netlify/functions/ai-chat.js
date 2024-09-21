@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer'
 import OpenAI from 'openai'
+import { encoding_for_model } from 'tiktoken' // Add tiktoken for token counting
 
 const openai = new OpenAI({
   organization: process.env.VITE_ORG_ID,
@@ -7,8 +8,45 @@ const openai = new OpenAI({
   apiKey: process.env.VITE_OPENAI_API_KEY
 })
 
+const MAX_TOKENS = 4096 // Example: GPT-4 (4k tokens context window)
+const MIN_REQUIRED_TOKENS = 2000 // Define a minimum threshold
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // Example: 2MB size limit
 
+// Initialize the tokenizer for GPT-4
+const tokenizer = encoding_for_model('gpt-4')
+
+// Function to calculate tokens and pad if needed
+function padTokensIfNeeded(messages, timelineData) {
+  let totalTokens = 0
+
+  // Tokenize the chat history
+  messages.forEach((message) => {
+    totalTokens += tokenizer.encode(message.content).length
+  })
+
+  // Tokenize the timeline data
+  const timelineTokens = tokenizer.encode(timelineData)
+  totalTokens += timelineTokens.length
+
+  let tokensNeeded = MIN_REQUIRED_TOKENS - totalTokens
+
+  // If more tokens are needed, add padding
+  let paddedTimeline = timelineData
+  if (tokensNeeded > 0) {
+    const paddingText = 'This is padding text. ' // Example padding sentence
+    const paddingTokens = tokenizer.encode(paddingText).length
+
+    // Repeat padding text until reaching the desired token count
+    while (tokensNeeded > 0) {
+      paddedTimeline += paddingText
+      tokensNeeded -= paddingTokens
+    }
+  }
+
+  return paddedTimeline
+}
+
+// Function to parse multipart form data
 const parseMultipartForm = (event) => {
   const boundary = event.headers['content-type'].split('boundary=')[1]
   let result = { file: null, chatHistory: null }
@@ -78,11 +116,15 @@ const handler = async (event) => {
         updatedChatHistory.push(newItem)
       }
 
+      // Optionally pad tokens if needed
+      const paddedContent = padTokensIfNeeded(updatedChatHistory, formData.file.content)
+
       return {
         statusCode: 200,
         body: JSON.stringify({
           message: 'Markdown file processed successfully',
-          chatHistory: updatedChatHistory
+          chatHistory: updatedChatHistory,
+          paddedContent
         })
       }
     } catch (error) {
@@ -95,13 +137,18 @@ const handler = async (event) => {
     // Handle other POST requests (e.g., chat completions)
     try {
       let { chatHistory, newValue } = JSON.parse(event.body)
+
       chatHistory.push({
         role: 'user',
         content: newValue
       })
+
+      // Pad timeline data if needed before sending it to OpenAI
+      const paddedTimeline = padTokensIfNeeded(chatHistory, newValue)
+
       const params = {
         messages: chatHistory,
-        model: 'gpt-3.5-turbo'
+        model: 'gpt-4'
       }
 
       const response = await openai.chat.completions.create(params)
@@ -112,14 +159,9 @@ const handler = async (event) => {
         body: JSON.stringify(chatHistory)
       }
     } catch (error) {
-      let chatHistory = JSON.parse(event.body)
-      chatHistory.push({
-        role: 'assistant',
-        content: 'Assistant timed out. Consider breaking up your prompt into smaller pieces.'
-      })
       return {
-        statusCode: 200,
-        body: JSON.stringify(chatHistory)
+        statusCode: 500,
+        body: JSON.stringify({ message: `Server error: ${error.message}` })
       }
     }
   }
