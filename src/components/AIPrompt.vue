@@ -144,7 +144,7 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
   const byteCheck = throwErrorIfTimelineTooLarge(JSON.stringify(chatHistory.value))
   console.log('Timeline check:', timelineCheck)
   console.log('Byte check:', byteCheck)
-  if (timelineCheck.error || byteCheck.error) {
+  if (timelineCheck.error === true || byteCheck.error === true) {
     writeMessage(timelineCheck.message, 'error')
     chatHistory.value = []
     localStorage.removeItem('gnap')
