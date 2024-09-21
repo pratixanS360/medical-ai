@@ -113,10 +113,35 @@ function checkTimelineSizeAndReset(timelineString: string) {
     }
   }
 }
+// Function to calculate the byte size of a string
+function calculateByteSize(inputString: string): number {
+  return new TextEncoder().encode(inputString).length
+}
 
+// Define the error when the timeline is too large
+function throwErrorIfTimelineTooLarge(timeline: string) {
+  const MAX_SIZE = 2 * 1024 * 1024 // 2MB size limit
+
+  const timelineSize = calculateByteSize(timeline)
+
+  if (timelineSize > MAX_SIZE) {
+    // Return error to user
+    return {
+      error: true,
+      message: 'The timeline is too large to submit. Please restart the app.'
+    }
+  } else {
+    // Proceed with submitting the timeline as part of chatHistory
+    return {
+      error: false,
+      message: 'Timeline is within limits.'
+    }
+  }
+}
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   const timelineCheck = checkTimelineSizeAndReset(JSON.stringify(chatHistory.value))
-  if (timelineCheck.error) {
+  const byteCheck = throwErrorIfTimelineTooLarge(JSON.stringify(chatHistory.value))
+  if (timelineCheck.error || byteCheck.error) {
     writeMessage(timelineCheck.message, 'error')
     chatHistory.value = []
     localStorage.removeItem('gnap')
