@@ -98,7 +98,7 @@ function estimateTokenCount(text: string) {
 function checkTimelineSizeAndReset(timelineString: string) {
   const tokenLimit = 4096 // Adjust based on the model
   const estimatedTokens = estimateTokenCount(timelineString)
-
+  console.log('Estimated tokens:', estimatedTokens)
   if (estimatedTokens > tokenLimit) {
     // Return error to user
     return {
@@ -123,7 +123,7 @@ function throwErrorIfTimelineTooLarge(timeline: string) {
   const MAX_SIZE = 2 * 1024 * 1024 // 2MB size limit
 
   const timelineSize = calculateByteSize(timeline)
-
+  console.log('Timeline size:', timelineSize)
   if (timelineSize > MAX_SIZE) {
     // Return error to user
     return {
