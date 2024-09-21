@@ -142,8 +142,8 @@ function throwErrorIfTimelineTooLarge(timeline: string) {
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   const timelineCheck = checkTimelineSizeAndReset(JSON.stringify(chatHistory.value))
   const byteCheck = throwErrorIfTimelineTooLarge(JSON.stringify(chatHistory.value))
-  console.log('Timeline check:', timelineCheck)
-  console.log('Byte check:', byteCheck)
+  console.log('Timeline check:', timelineCheck, timelineCheck.error, timelineCheck.error === true)
+  console.log('Byte check:', byteCheck, byteCheck.error, byteCheck.error === true)
   if (timelineCheck.error === true || byteCheck.error === true) {
     writeMessage(timelineCheck.message, 'error')
     chatHistory.value = []
