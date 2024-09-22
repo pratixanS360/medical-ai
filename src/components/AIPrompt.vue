@@ -153,6 +153,7 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
     appState.popupContent.value =
       'Timeline size caused an error. Please restart the app. Close this window to clear session.'
     appState.popupContentFunction.value = closeSession
+    showPopup()
     return false
   }
   const response = await fetch(url, {
