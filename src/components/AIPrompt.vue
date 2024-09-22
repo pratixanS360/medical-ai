@@ -145,6 +145,7 @@ const postData = async (url = '', data = {}, headers = { 'Content-Type': 'applic
   console.log('Timeline check:', timelineCheck, timelineCheck.error, timelineCheck.error === true)
   console.log('Byte check:', byteCheck, byteCheck.error, byteCheck.error === true)
   if (timelineCheck.error === true || byteCheck.error === true) {
+    console.log('Timeline size error. Clearing session.')
     writeMessage(timelineCheck.message, 'error')
     chatHistory.value = []
     localStorage.removeItem('gnap')
@@ -292,6 +293,10 @@ const sendQuery = () => {
     if (!data) {
       writeMessage('Failed to get response from AI', 'error')
       appState.isLoading.value = false
+      appState.activeQuestion.value = {
+        role: 'user',
+        content: ''
+      }
       return
     }
     appState.isLoading.value = false
