@@ -16,7 +16,6 @@ import {
 import { GNAP } from 'vue3-gnap'
 import PopUp from './PopUp.vue'
 import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
-import { time } from 'console'
 
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 const localStorageKey = 'noshuri'
@@ -90,7 +89,7 @@ const getSystemMessageType = (message: string): string => {
 const signatureContent = (username: string): string => {
   return `Signed by: ${username} Date: ${new Date().toDateString()}`
 }
-// Function to estimate token count based on string length (rough estimate)
+
 function estimateTokenCount(text: string) {
   const averageTokenLength = 4 // Average length of a token in characters
   return Math.ceil(text.length / averageTokenLength)
@@ -101,51 +100,22 @@ function checkTimelineSizeAndReset(timelineString: string) {
   const estimatedTokens = estimateTokenCount(timelineString)
   console.log('Estimated tokens:', estimatedTokens)
   if (estimatedTokens > tokenLimit) {
-    // Return error to user
-    console.log('Timeline is too large to submit. Please restart the app.')
     return {
       error: true,
       message: 'The timeline is too large to submit. Please restart the app.'
     }
   } else {
-    // Proceed with submitting the timeline as part of chatHistory
     return {
       error: false,
       message: 'Timeline is within limits.'
     }
   }
 }
-// Function to calculate the byte size of a string
-function calculateByteSize(inputString: string): number {
-  return new TextEncoder().encode(inputString).length
-}
 
-// Define the error when the timeline is too large
-function throwErrorIfTimelineTooLarge(timeline: string) {
-  const MAX_SIZE = 2 * 1024 * 1024 // 2MB size limit
-
-  const timelineSize = calculateByteSize(timeline)
-  console.log('Timeline size:', timelineSize)
-  if (timelineSize > MAX_SIZE) {
-    // Return error to user
-    return {
-      error: true,
-      message: 'The timeline is too large to submit. Please restart the app.'
-    }
-  } else {
-    // Proceed with submitting the timeline as part of chatHistory
-    return {
-      error: false,
-      message: 'Timeline is within limits.'
-    }
-  }
-}
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
   const timelineCheck = checkTimelineSizeAndReset(JSON.stringify(chatHistory.value))
-  const byteCheck = throwErrorIfTimelineTooLarge(JSON.stringify(chatHistory.value))
   console.log('Timeline check:', timelineCheck, timelineCheck.error, timelineCheck.error === true)
-  console.log('Byte check:', byteCheck, byteCheck.error, byteCheck.error === true)
-  if (timelineCheck.error === true || byteCheck.error === true) {
+  if (timelineCheck.error === true) {
     console.log('Timeline size error. Clearing session.')
     writeMessage(timelineCheck.message, 'error')
     chatHistory.value = []
@@ -234,19 +204,21 @@ async function showJWT(jwt: string) {
         return response.text()
       })
       .then((data) => {
-        chatHistory.value.push({
-          role: 'system',
-          content: 'timeline\n\nuploaded at ' + new Date().toLocaleString() + '\n\n' + data
-        })
         const timelineCheck = checkTimelineSizeAndReset(data)
-        console.log(
-          'Timeline check:',
-          timelineCheck,
-          timelineCheck.error,
-          timelineCheck.error === true
-        )
-        appState.isLoading.value = false
-        writeMessage('Patient Timeline Loaded', 'success')
+        if (timelineCheck.error === true) {
+          appState.popupContent.value = 'Timeline size caused an error.'
+          appState.popupContentFunction.value = closeSession
+          showPopup()
+          return
+        } else {
+          chatHistory.value.push({
+            role: 'system',
+            content: 'timeline\n\nuploaded at ' + new Date().toLocaleString() + '\n\n' + data
+          })
+
+          appState.isLoading.value = false
+          writeMessage('Patient Timeline Loaded', 'success')
+        }
       })
       .catch((error) => {
         console.error('Fatal Error. Closing Session.', error)
