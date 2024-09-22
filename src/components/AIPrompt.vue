@@ -16,6 +16,7 @@ import {
 import { GNAP } from 'vue3-gnap'
 import PopUp from './PopUp.vue'
 import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
+import { time } from 'console'
 
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 const localStorageKey = 'noshuri'
@@ -237,6 +238,13 @@ async function showJWT(jwt: string) {
           role: 'system',
           content: 'timeline\n\nuploaded at ' + new Date().toLocaleString() + '\n\n' + data
         })
+        const timelineCheck = checkTimelineSizeAndReset(data)
+        console.log(
+          'Timeline check:',
+          timelineCheck,
+          timelineCheck.error,
+          timelineCheck.error === true
+        )
         appState.isLoading.value = false
         writeMessage('Patient Timeline Loaded', 'success')
       })
