@@ -18,6 +18,7 @@ import PopUp from './PopUp.vue'
 import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
 
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
+const TOKEN_LIMIT = 4096 // Adjust based on the model
 const localStorageKey = 'noshuri'
 const chatHistory = ref<ChatHistoryItem[]>([])
 const appState: AppState = {
@@ -68,7 +69,9 @@ const convertJSONtoMarkdown = (json: ChatHistoryItem[], username: string): strin
     '### Transcript\n' +
     json
       .map((x) => {
-        return `##### ${x.role}:\n${x.role !== 'system' ? x.content : getSystemMessageType(x.content as string)}`
+        return `##### ${x.role}:\n${
+          x.role !== 'system' ? x.content : getSystemMessageType(x.content as string)
+        }`
       })
       .join('\n') +
     '\n\n##### ' +
@@ -96,10 +99,9 @@ function estimateTokenCount(text: string) {
 }
 
 function checkTimelineSizeAndReset(timelineString: string) {
-  const tokenLimit = 4096 // Adjust based on the model
   const estimatedTokens = estimateTokenCount(timelineString)
   console.log('Estimated tokens:', estimatedTokens)
-  if (estimatedTokens > tokenLimit) {
+  if (estimatedTokens > TOKEN_LIMIT) {
     return {
       error: true,
       message: 'The timeline is too large to submit. Please restart the app.'
@@ -110,6 +112,21 @@ function checkTimelineSizeAndReset(timelineString: string) {
       message: 'Timeline is within limits.'
     }
   }
+}
+
+function truncateTimeline(timelineString: string): string {
+  const lines = timelineString.split('\n')
+  while (lines.length > 0) {
+    const currentString = lines.join('\n')
+    const estimatedTokens = estimateTokenCount(currentString)
+    if (estimatedTokens <= TOKEN_LIMIT) {
+      return currentString
+    }
+    // Remove lines from the beginning (oldest entries)
+    lines.shift()
+  }
+  // If all lines are removed and still over the limit (unlikely), return empty string
+  return ''
 }
 
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
@@ -160,7 +177,7 @@ if (uri && uri.length > 0) {
   uri = ''
 }
 
-//Create access object for GNAP
+// Create access object for GNAP
 const access = [
   {
     type: 'App',
@@ -204,21 +221,27 @@ async function showJWT(jwt: string) {
         return response.text()
       })
       .then((data) => {
-        const timelineCheck = checkTimelineSizeAndReset(data)
+        let timelineCheck = checkTimelineSizeAndReset(data)
         if (timelineCheck.error === true) {
-          appState.popupContent.value = 'Timeline size caused an error.'
-          appState.popupContentFunction.value = closeSession
-          showPopup()
-          return
-        } else {
-          chatHistory.value.push({
-            role: 'system',
-            content: 'timeline\n\nuploaded at ' + new Date().toLocaleString() + '\n\n' + data
-          })
-
-          appState.isLoading.value = false
-          writeMessage('Patient Timeline Loaded', 'success')
+          // Truncate the timeline to fit within the token limit
+          data = truncateTimeline(data)
+          timelineCheck = checkTimelineSizeAndReset(data)
+          if (timelineCheck.error === true) {
+            appState.popupContent.value = 'Timeline size is too large even after truncation.'
+            appState.popupContentFunction.value = closeSession
+            showPopup()
+            return
+          } else {
+            writeMessage('Timeline was truncated to fit within limits.', 'warning')
+          }
         }
+        chatHistory.value.push({
+          role: 'system',
+          content: 'timeline\n\nuploaded at ' + new Date().toLocaleString() + '\n\n' + data
+        })
+
+        appState.isLoading.value = false
+        writeMessage('Patient Timeline Loaded', 'success')
       })
       .catch((error) => {
         console.error('Fatal Error. Closing Session.', error)
