@@ -18,7 +18,7 @@ import PopUp from './PopUp.vue'
 import type { ChatHistoryItem, AppState, QueryFormState, FileFormState } from '../types'
 
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
-const TOKEN_LIMIT = 4096 // Adjust based on the model
+const TOKEN_LIMIT = 2048 // Adjust based on the model
 const localStorageKey = 'noshuri'
 const chatHistory = ref<ChatHistoryItem[]>([])
 const appState: AppState = {
