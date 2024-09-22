@@ -98,18 +98,20 @@ function estimateTokenCount(text: string) {
   return Math.ceil(text.length / averageTokenLength)
 }
 
-function checkTimelineSizeAndReset(timelineString: string) {
+function checkTimelineSize(timelineString: string) {
   const estimatedTokens = estimateTokenCount(timelineString)
-  console.log('Estimated tokens:', estimatedTokens)
   if (estimatedTokens > TOKEN_LIMIT) {
     return {
       error: true,
-      message: 'The timeline is too large to submit. Please restart the app.'
+      message:
+        'The timeline is too large to submit. Please restart the app. It would use ' +
+        estimatedTokens +
+        ' tokens.'
     }
   } else {
     return {
       error: false,
-      message: 'Timeline is within limits.'
+      message: 'Timeline is within limits. ' + estimatedTokens + ' tokens.'
     }
   }
 }
@@ -130,7 +132,7 @@ function truncateTimeline(timelineString: string): string {
 }
 
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
-  const timelineCheck = checkTimelineSizeAndReset(JSON.stringify(chatHistory.value))
+  const timelineCheck = checkTimelineSize(JSON.stringify(chatHistory.value))
   console.log('Timeline check:', timelineCheck, timelineCheck.error, timelineCheck.error === true)
   if (timelineCheck.error === true) {
     console.log('Timeline size error. Clearing session.')
@@ -221,11 +223,12 @@ async function showJWT(jwt: string) {
         return response.text()
       })
       .then((data) => {
-        let timelineCheck = checkTimelineSizeAndReset(data)
+        let timelineCheck = checkTimelineSize(data)
         if (timelineCheck.error === true) {
           // Truncate the timeline to fit within the token limit
           data = truncateTimeline(data)
-          timelineCheck = checkTimelineSizeAndReset(data)
+          timelineCheck = checkTimelineSize(data)
+          writeMessage('Checked inbound timeline size. ' + timelineCheck.message, 'success')
           if (timelineCheck.error === true) {
             appState.popupContent.value = 'Timeline size is too large even after truncation.'
             appState.popupContentFunction.value = closeSession
