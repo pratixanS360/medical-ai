@@ -224,12 +224,15 @@ async function showJWT(jwt: string) {
       })
       .then((data) => {
         let timelineCheck = checkTimelineSize(data)
+        writeMessage('Checked inbound timeline size. ' + timelineCheck.message, 'success')
         if (timelineCheck.error === true) {
+          console.log('Timeline size error. Truncating timeline.', data)
           // Truncate the timeline to fit within the token limit
           data = truncateTimeline(data)
           timelineCheck = checkTimelineSize(data)
-          writeMessage('Checked inbound timeline size. ' + timelineCheck.message, 'success')
+
           if (timelineCheck.error === true) {
+            console.log('Timeline size error after truncation. Clearing session.', data)
             appState.popupContent.value = 'Timeline size is too large even after truncation.'
             appState.popupContentFunction.value = closeSession
             showPopup()
