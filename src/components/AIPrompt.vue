@@ -132,26 +132,11 @@ function truncateTimeline(timelineString: string): string {
 }
 
 const postData = async (url = '', data = {}, headers = { 'Content-Type': 'application/json' }) => {
-  const timelineCheck = checkTimelineSize(JSON.stringify(chatHistory.value))
-  console.log('Timeline check:', timelineCheck, timelineCheck.error, timelineCheck.error === true)
-  if (timelineCheck.error === true) {
-    console.log('Timeline size error. Clearing session.')
-    writeMessage(timelineCheck.message, 'error')
-    chatHistory.value = []
-    localStorage.removeItem('gnap')
-    sessionStorage.removeItem(localStorageKey)
-    appState.popupContent.value =
-      'Timeline size caused an error. Please restart the app. Close this window to clear session.'
-    appState.popupContentFunction.value = closeSession
-    showPopup()
-    return false
-  }
   const response = await fetch(url, {
     method: 'POST',
     headers,
     body: JSON.stringify(data)
   })
-
   try {
     return await response.json()
   } catch (error) {
