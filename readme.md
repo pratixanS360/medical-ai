@@ -36,7 +36,7 @@ Make sure to set these variables before running the MAIA App.
    This initiates the process of creating your Trustee account.
 
 3. Verify your email address.
-   You will receive an email with a verification code.
+   You will receive a verf
 
 4. Create a passkey for login.
    Passkeys provide a secure, passwordless login method.
