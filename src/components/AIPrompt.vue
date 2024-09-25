@@ -274,15 +274,15 @@ const saveToNosh = async () => {
   }
 }
 
+// Add a ref to store the selected LLM
+const selectedLLM = ref('gpt-4') // Default to ai-chat (OpenAI)
+  
 // Send query to OpenAI
 const sendQuery = () => {
 
-  // Add a ref to store the selected LLM
-  const selectedLLM = ref('ai-chat') // Default to ai-chat (OpenAI)
-
   const llmEndpoints = {
       'gpt-4': '/.netlify/functions/ai-chat',
-      'llama3.1': '/.netlify/functions/ai-chat-llama',
+      'llama-3.1': '/.netlify/functions/ai-chat-llama',
       'cohere': '/.netlify/functions/ai-chat-cohere'
   }
   
@@ -506,7 +506,7 @@ const closeSession = () => {
     <div class="wrapper">
     <!-- Toggle for selecting LLM -->
     <label for="llm-select">Choose Language Model:</label>
-    <select id="llm-select" name="llm-select">
+    <select id="llm-select" name="llm-select" v-model="selectedLLM">
          <option value="gpt-4">GPT-4</option>
          <option value="llama-3.1">Llama 3.1</option>
          <option value="cohere">Cohere</option>
