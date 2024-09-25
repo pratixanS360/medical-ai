@@ -495,7 +495,6 @@ const closeSession = () => {
          <option value="llama-3.1-instruct">Llama 3.1</option>
          <option value="cohere">Cohere</option>
       </select>
-     </div>
     </div>
     <div :class="'message ' + appState.messageType.value">
       <p v-if="appState.isMessage.value">
