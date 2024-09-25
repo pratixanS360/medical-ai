@@ -294,7 +294,7 @@ const sendQuery = () => {
   // Determine which function to call based on selected LLM
   const selectedEndpoint = llmEndpoints[selectedLLM.value]
 
-  //Debug
+  // Debug
   console.log(selectedEndpoint)
   
   postData(selectedEndpoint, {
