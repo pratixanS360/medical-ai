@@ -487,6 +487,16 @@ const closeSession = () => {
         />
       </div>
     </div>
+    <div class="wrapper">
+    <!-- Toggle for selecting LLM -->
+    <label for="llm-select">Choose Language Model:</label>
+    <select id="llm-select" name="llm-select">
+         <option value="gpt-4">GPT-4</option>
+         <option value="llama-3.1-instruct">Llama 3.1</option>
+         <option value="cohere">Cohere</option>
+      </select>
+     </div>
+    </div>
     <div :class="'message ' + appState.messageType.value">
       <p v-if="appState.isMessage.value">
         {{ appState.message.value }}
