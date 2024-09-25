@@ -281,8 +281,8 @@ const sendQuery = () => {
   const selectedLLM = ref('ai-chat') // Default to ai-chat (OpenAI)
 
   const llmEndpoints = {
-      'openai': '/.netlify/functions/ai-chat',
-      'llama': '/.netlify/functions/ai-chat-llama',
+      'gpt-4': '/.netlify/functions/ai-chat',
+      'llama3.1': '/.netlify/functions/ai-chat-llama',
       'cohere': '/.netlify/functions/ai-chat-cohere'
   }
   
@@ -508,7 +508,7 @@ const closeSession = () => {
     <label for="llm-select">Choose Language Model:</label>
     <select id="llm-select" name="llm-select">
          <option value="gpt-4">GPT-4</option>
-         <option value="llama-3.1-instruct">Llama 3.1</option>
+         <option value="llama-3.1">Llama 3.1</option>
          <option value="cohere">Cohere</option>
       </select>
     </div>
