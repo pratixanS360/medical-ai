@@ -293,10 +293,7 @@ const sendQuery = () => {
   }
   // Determine which function to call based on selected LLM
   const selectedEndpoint = llmEndpoints[selectedLLM.value]
-
-  // Debug
-  console.log(selectedEndpoint)
-  
+ 
   postData(selectedEndpoint, {
     chatHistory: chatHistory.value,
     newValue: formState.currentQuery
