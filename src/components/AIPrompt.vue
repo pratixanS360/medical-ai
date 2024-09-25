@@ -470,7 +470,7 @@ const closeSession = () => {
         <q-btn @click="pickFiles" flat icon="attach_file" />
         <q-input
           outlined
-          placeholder="Message ChatGPT"
+          placeholder="Type your message..."
           v-model="formState.currentQuery"
           @keyup.enter="sendQuery"
         ></q-input>
