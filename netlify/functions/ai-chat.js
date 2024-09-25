@@ -3,7 +3,7 @@ import OpenAI from 'openai'
 import { encoding_for_model } from 'tiktoken' // Add tiktoken for token counting
 
 const openai = new OpenAI({
-  organization: process.env.VITE_ORG_ID,
+  //organization: process.env.VITE_ORG_ID,
   project: process.env.VITE_PROJECT_ID,
   apiKey: process.env.VITE_OPENAI_API_KEY
 })
