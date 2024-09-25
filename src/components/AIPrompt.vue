@@ -276,12 +276,28 @@ const saveToNosh = async () => {
 
 // Send query to OpenAI
 const sendQuery = () => {
+
+  // Add a ref to store the selected LLM
+  const selectedLLM = ref('ai-chat') // Default to ai-chat (OpenAI)
+
+  const llmEndpoints = {
+      'openai': '/.netlify/functions/ai-chat',
+      'llama': '/.netlify/functions/ai-chat-llama',
+      'cohere': '/.netlify/functions/ai-chat-cohere'
+  }
+  
   appState.isLoading.value = true
   appState.activeQuestion.value = {
     role: 'user',
     content: formState.currentQuery || ''
   }
-  postData('/.netlify/functions/ai-chat', {
+  // Determine which function to call based on selected LLM
+  const selectedEndpoint = llmEndpoints[selectedLLM.value]
+
+  //Debug
+  console.log(selectedEndpoint)
+  
+  postData(selectedEndpoint, {
     chatHistory: chatHistory.value,
     newValue: formState.currentQuery
   }).then((data) => {
