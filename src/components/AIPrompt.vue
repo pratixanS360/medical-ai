@@ -283,7 +283,7 @@ const sendQuery = () => {
   const llmEndpoints = {
       'gpt-4': '/.netlify/functions/ai-chat',
       'llama-3.1': '/.netlify/functions/ai-chat-llama',
-      'cohere': '/.netlify/functions/ai-chat-cohere'
+      'mistral': '/.netlify/functions/ai-chat-mistral'
   }
   
   appState.isLoading.value = true
@@ -506,7 +506,7 @@ const closeSession = () => {
     <select id="llm-select" name="llm-select" v-model="selectedLLM">
          <option value="gpt-4">GPT-4</option>
          <option value="llama-3.1">Llama 3.1</option>
-         <option value="cohere">Mistral</option>
+         <option value="mistral">Mistral</option>
       </select>
     </div>
     <div :class="'message ' + appState.messageType.value">
