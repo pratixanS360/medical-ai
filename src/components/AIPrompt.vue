@@ -506,7 +506,7 @@ const closeSession = () => {
     <select id="llm-select" name="llm-select" v-model="selectedLLM">
          <option value="gpt-4">GPT-4</option>
          <option value="llama-3.1">Llama 3.1</option>
-         <option value="cohere">Cohere</option>
+         <option value="cohere">Mistral</option>
       </select>
     </div>
     <div :class="'message ' + appState.messageType.value">
