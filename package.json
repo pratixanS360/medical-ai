@@ -26,7 +26,7 @@
     "vue3-gnap": "^1.0.16",
     "langchain": "0.2.20",
     "@langchain/core": "^0.3.0",
-    "@langchain/mistralai": "^0.0.0"
+    "@langchain/mistralai": "0.1.1"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.4",
