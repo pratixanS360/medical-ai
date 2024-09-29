@@ -138,8 +138,12 @@ const handler = async (event) => {
 		    chatHistory: updatedChatHistory
 		})
 	    }
+	} catch (error) {
+	    return {
+		statusCode: 500,
+		body:JSON.stringify({ message: `Server error: ${error.message}` })
+	    }
 	}
-	
     } else {
 	try {
 	    let {chatHistory, newValue} = JSON.parse(event.body)
