@@ -61,35 +61,56 @@ const processUserQuery = async (chatHistory, newValue) => {
 	chunkOverlap: 100,
     })
 
-    const contentArray = chatHistory.map(message => message.content)
-    console.log(contentArray) //debug
+    try {
+    	const contentArray = chatHistory.map(message => message.content)
+    	console.log(contentArray) //debug
+
+    	const splits = await textSplitter.createDocuments(contentArray)
+    } catch(error) {
+      	return {
+	       statusCode: 500,
+	       body: JSON.stringify({ message: `Server error textsplitter: ${error.message}` }),
+	}	
+    } 
     
-    const splits = await textSplitter.createDocuments(contentArray)
+    
+    try {
 
-    const embeddings = new MistralAIEmbeddings({
-	model: "mistral-embed",
-    })
+    	const embeddings = new MistralAIEmbeddings({
+	      model: "mistral-embed",
+    	})
 
-    const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
+    	const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
 
-    const retriever = vectorStore.asRetriever()
-    const retrievedDocs = await retriever.invoke(newValue)
+    	const retriever = vectorStore.asRetriever()
+    	const retrievedDocs = await retriever.invoke(newValue)
+    } catch (error) {
+      	return {
+	       statusCode: 500,
+	       body: JSON.stringify({ message: `Server error retriever: ${error.message}` }),
+	}
+    }
 
     const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt")
 
-    //const paddedTimeline = padTokensIfNeeded(chatHistory, retrievedDocs.join('\n'))
+    try {
+    	const ragChain = await createStuffDocumentsChain({
+	      llm,
+	      prompt,
+	      outputParser: new StringOutputParser(),
+	})
 
-    const ragChain = await createStuffDocumentsChain({
-	llm,
-	prompt,
-	outputParser: new StringOutputParser(),
-    })
-
-    const response = await ragChain.invoke({
-	question: newValue,
-	context: retrievedDocs,
-    })
-
+    	const response = await ragChain.invoke({
+	      question: newValue,
+	      context: retrievedDocs,
+    	})
+    } catch (error) {
+        return {
+	       statusCode: 500,
+               body: JSON.stringify({ message: `Server error ragchain: ${error.message}` }),
+	}
+    }
+    
     chatHistory.push({
 	role: 'assistant',
 	content: response.output
