@@ -148,18 +148,19 @@ const handler = async (event) => {
 
 	    // generate chat completion from the LLM
 	    const response = await llm.invoke([
-		["system","You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."],
-		["user", newValue],
+		['system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."],
+		['messaages',chatHistory],
+		['user', newValue],
 	    ]);
 
 	    chatHistory.push({
-		role: 'system',
-		content: response.content,
+		role: 'assistant',
+		content: response.content
 	    });    
 	    
 	    return {
 		statusCode: 200,
-		body: JSON.stringify(response.content),
+		body: JSON.stringify(chatHistory),
 	    };
 	} catch (error) {
 	    return {
