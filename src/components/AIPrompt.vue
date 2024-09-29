@@ -346,7 +346,7 @@ async function uploadFile(e: Event) {
     })) as Response
 
     if (!response.ok) {
-      writeMessage('Failed to upload file', 'error')
+      writeMessage('Failed to upload file (1)', 'error')
       return
     }
     const data = await response.json()
@@ -355,7 +355,7 @@ async function uploadFile(e: Event) {
       chatHistory.value = data.chatHistory
     }
   } catch (error) {
-    writeMessage('Failed to upload file', 'error')
+    writeMessage('Failed to upload file (2)', 'error')
   }
 }
 
