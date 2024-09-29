@@ -276,14 +276,14 @@ const saveToNosh = async () => {
 
 // Add a ref to store the selected LLM
 const selectedLLM = ref('gpt-4') // Default to ai-chat (OpenAI)
+
+const llmEndpoints = {
+      'gpt-4': '/.netlify/functions/ai-chat',
+      'mistral': '/.netlify/functions/ai-chat-mistral'
+}
   
 // Send query to LLM
 const sendQuery = () => {
-
-  const llmEndpoints = {
-      'gpt-4': '/.netlify/functions/ai-chat',
-      'mistral': '/.netlify/functions/ai-chat-mistral'
-  }
   
   appState.isLoading.value = true
   appState.activeQuestion.value = {
@@ -340,7 +340,7 @@ async function uploadFile(e: Event) {
   formData.append('chatHistory', JSON.stringify(chatHistory.value))
 
   try {
-    const response = (await fetch('/.netlify/functions/ai-chat', {
+    const response = (await fetch(llmEndpoints[selectedLLM.value], {
       method: 'POST',
       body: formData
     })) as Response
