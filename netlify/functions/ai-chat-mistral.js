@@ -103,7 +103,7 @@ const handler = async (event) => {
     if (event.headers['content-type'] && event.headers['content-type'].includes('multipart/form-data')) {
 	// Check content-length header before parsing
 	const fileSize = parseInt(event.headers['content-length'], 10)
-
+	console.log('running if block') // debug
 	// Check filesize
 	if (fileSize > MAX_FILE_SIZE) {
 	    return {
@@ -142,6 +142,7 @@ const handler = async (event) => {
 	    }
 	}
     } else {
+	console.log('running else block') //debug
 	try {
 	    const {chatHistory, newValue} = JSON.parse(event.body);
 
