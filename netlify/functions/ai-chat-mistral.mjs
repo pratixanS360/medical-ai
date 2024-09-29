@@ -66,6 +66,13 @@ const processUserQuery = async (chatHistory, newValue) => {
     	console.log(contentArray) //debug
 
     	const splits = await textSplitter.createDocuments(contentArray)
+
+	const embeddings = new MistralAIEmbeddings({
+	      model: "mistral-embed",
+    	})
+
+    	const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
+	
     } catch(error) {
       	return {
 	       statusCode: 500,
@@ -75,13 +82,6 @@ const processUserQuery = async (chatHistory, newValue) => {
     
     
     try {
-
-    	const embeddings = new MistralAIEmbeddings({
-	      model: "mistral-embed",
-    	})
-
-    	const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
-
     	const retriever = vectorStore.asRetriever()
     	const retrievedDocs = await retriever.invoke(newValue)
     } catch (error) {
