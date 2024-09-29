@@ -12,8 +12,8 @@ const MAX_TOKENS = 4096 // Example: GPT-4 (4k tokens context window)
 const MIN_REQUIRED_TOKENS = 2000 // Define a minimum threshold
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // Example: 2MB size limit
 
-// Initialize the tokenizer for GPT-4o-mini
-const tokenizer = encodingForModel('gpt-4o-mini')
+// Initialize the tokenizer for GPT-4
+const tokenizer = encodingForModel('gpt-4')
 
 // Function to calculate tokens and pad if needed
 function padTokensIfNeeded(messages, timelineData) {
@@ -148,7 +148,7 @@ const handler = async (event) => {
 
       const params = {
         messages: chatHistory,
-        model: 'gpt-4o-mini'
+        model: 'gpt-4'
       }
 
       const response = await openai.chat.completions.create(params)

@@ -275,13 +275,13 @@ const saveToNosh = async () => {
 }
 
 // Add a ref to store the selected LLM
-const selectedLLM = ref('gpt-4o-mini') // Default to ai-chat (OpenAI)
+const selectedLLM = ref('gpt-4') // Default to ai-chat (OpenAI)
   
 // Send query to OpenAI
 const sendQuery = () => {
 
   const llmEndpoints = {
-      'gpt-4o-mini': '/.netlify/functions/ai-chat',
+      'gpt-4': '/.netlify/functions/ai-chat',
       'llama-3.1': '/.netlify/functions/ai-chat-llama',
       'mistral': '/.netlify/functions/ai-chat-mistral'
   }
@@ -504,7 +504,7 @@ const closeSession = () => {
     <!-- Toggle for selecting LLM -->
     <label for="llm-select">Choose Language Model:</label>
     <select id="llm-select" name="llm-select" v-model="selectedLLM">
-         <option value="gpt-4o-mini">GPT-4o-Mini</option>
+         <option value="gpt-4">GPT-4</option>
          <option value="llama-3.1">Llama 3.1</option>
          <option value="mistral">Mistral</option>
       </select>
