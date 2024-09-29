@@ -61,7 +61,7 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
 	chunkOverlap: 200,
     });
     
-    const splits = await textSplitter.splitDocuments(timeLineData); // get timeLineData?
+    const splits = await textSplitter.createDocuments([timeLineData]);
 
     const embeddings = new MistralAIEmbeddings({
 	model: "mistral-embed",
@@ -93,7 +93,7 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
     });
 
     return chatHistory;
-};
+}
 
 const handler = async (event) => {
     if (event.httpMethod !== 'POST') {
@@ -103,7 +103,7 @@ const handler = async (event) => {
     if (event.headers['content-type'] && event.headers['content-type'].includes('multipart/form-data')) {
 	// Check content-length header before parsing
 	const fileSize = parseInt(event.headers['content-length'], 10)
-	console.log('running if block') // debug
+
 	// Check filesize
 	if (fileSize > MAX_FILE_SIZE) {
 	    return {
@@ -114,7 +114,7 @@ const handler = async (event) => {
 
 	try {
 
-	    const {chatHistory, newValue} = JSON.parse(event.body);
+	    let {chatHistory, newValue} = JSON.parse(event.body);
 	    
 	    const formData = parseMultipartForm(event)
 
@@ -127,9 +127,6 @@ const handler = async (event) => {
 	    }
 
 	    const updatedChatHistory = await processUserQuery(chatHistory, newValue, formData.file.content);
-
-	    // Debug
-	    console.log('markdown file accessed!')
 	    
 	    return {
 		statusCode: 200,
@@ -142,9 +139,8 @@ const handler = async (event) => {
 	    }
 	}
     } else {
-	console.log('running else block') //debug
 	try {
-	    const {chatHistory, newValue} = JSON.parse(event.body);
+	    let {chatHistory, newValue} = JSON.parse(event.body);
 
 	    if (!Array.isArray(chatHistory)){
 		throw new Error("Invalid chat history format; expected an array.");
@@ -177,6 +173,6 @@ const handler = async (event) => {
 	    };
 	}
     }
-};
+}
 
 export { handler };
