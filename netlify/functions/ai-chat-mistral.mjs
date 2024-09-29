@@ -49,7 +49,7 @@ const parseMultipartForm = (event) => {
     return result
 }
 
-const processUserQuery = async (chatHistory, newValue, timeLineData) => {
+const processUserQuery = async (chatHistory, newValue) => {
     
     chatHistory.push({
 	role: 'user',
@@ -61,7 +61,7 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
 	chunkOverlap: 200,
     })
     
-    const splits = await textSplitter.createDocuments([timeLineData])
+    const splits = await textSplitter.createDocuments(chatHistory)
 
     const embeddings = new MistralAIEmbeddings({
 	model: "mistral-embed",
@@ -153,13 +153,13 @@ const handler = async (event) => {
 		content: newValue
 	    })
 
-	    const data = chatHistory[chatHistory.length - 2].content
+
 	    // generate chat completion from the LLM
-	    const updatedChatHistory = await processUserQuery(chatHistory, newValue, data)
+	    const updatedChatHistory = await processUserQuery(chatHistory, newValue)
 	    //const response = await llm.invoke([
 	    //	('system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."),
 	    //	('human', newValue),
-	    //  ])
+	    // 	 ])
 
 	    //chatHistory.push({
 	    //		role: 'assistant',
