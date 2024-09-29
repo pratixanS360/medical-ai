@@ -277,7 +277,7 @@ const saveToNosh = async () => {
 // Add a ref to store the selected LLM
 const selectedLLM = ref('gpt-4') // Default to ai-chat (OpenAI)
   
-// Send query to OpenAI
+// Send query to LLM
 const sendQuery = () => {
 
   const llmEndpoints = {

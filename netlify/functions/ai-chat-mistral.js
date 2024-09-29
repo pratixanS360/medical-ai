@@ -159,7 +159,7 @@ const handler = async (event) => {
 	    
 	    return {
 		statusCode: 200,
-		body: JSON.stringify(chatHistory),
+		body: JSON.stringify(response.content),
 	    };
 	} catch (error) {
 	    return {
