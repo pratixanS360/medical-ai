@@ -13,7 +13,7 @@ const MAX_FILE_SIZE = 2 * 1024 *1024
 const llm = new ChatMistralAI({
     model: "mistral-large-latest",
     temperature: 0,  // Adjust the temperature as needed
-});
+})
 
 
 // Function to parse multipart form data
@@ -54,50 +54,50 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
     chatHistory.push({
 	role: 'user',
 	content: newValue
-    });
+    })
 
     const textSplitter = new RecursiveCharacterTextSplitter({
 	chunkSize: 1000,
 	chunkOverlap: 200,
-    });
+    })
     
-    const splits = await textSplitter.createDocuments([timeLineData]);
+    const splits = await textSplitter.createDocuments([timeLineData])
 
     const embeddings = new MistralAIEmbeddings({
 	model: "mistral-embed",
-    });
+    })
 
-    const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
+    const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
 
-    const retriever = vectorStore.asRetriever();
-    const retrievedDocs = await retriever.invoke(newValue);
+    const retriever = vectorStore.asRetriever()
+    const retrievedDocs = await retriever.invoke(newValue)
 
-    const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt");
+    const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt")
 
-    //const paddedTimeline = padTokensIfNeeded(chatHistory, retrievedDocs.join('\n'));
+    //const paddedTimeline = padTokensIfNeeded(chatHistory, retrievedDocs.join('\n'))
 
     const ragChain = await createStuffDocumentsChain({
 	llm,
 	prompt,
 	outputParser: new StringOutputParser(),
-    });
+    })
 
     const response = await ragChain.invoke({
 	question: newValue,
 	context: retrievedDocs,
-    });
+    })
 
     chatHistory.push({
 	role: 'assistant',
 	content: response.output
-    });
+    })
 
-    return chatHistory;
+    return chatHistory
 }
 
 const handler = async (event) => {
     if (event.httpMethod !== 'POST') {
-	return { statusCode: 405, body: 'Method Not Allowed' };
+	return { statusCode: 405, body: 'Method Not Allowed' }
     }
 
     if (event.headers['content-type'] && event.headers['content-type'].includes('multipart/form-data')) {
@@ -114,7 +114,7 @@ const handler = async (event) => {
 
 	try {
 
-	    let {chatHistory, newValue} = JSON.parse(event.body);
+	    //let {chatHistory, newValue} = JSON.parse(event.body)
 	    
 	    const formData = parseMultipartForm(event)
 
@@ -126,11 +126,22 @@ const handler = async (event) => {
 		}
 	    }
 
-	    const updatedChatHistory = await processUserQuery(chatHistory, newValue, formData.file.content);
+	    //const updatedChatHistory = await processUserQuery(chatHistory, newValue, formData.file.content)
+	    const updatedChatHistory = formData.chatHistory || []
+	    const newItem = {
+		role: 'system',
+		content: `{ "type":"file", "filename":"${formData.file.filename}", "size":"${fileSize} bytes"}\n${formData.file.content}`
+	    }
+	    if (!updatedChatHistory.includes(newItem)) {
+		updatedChatHistory.push(newItem)
+	    }
 	    
 	    return {
 		statusCode: 200,
-		body: JSON.stringify(updatedChatHistory)
+		body: JSON.stringify({
+		    message: 'Markdown file processed successfully',
+		    chatHistory: updatedChatHistory
+		})
 	    }
 	} catch (error) {
 	    return {
@@ -140,39 +151,36 @@ const handler = async (event) => {
 	}
     } else {
 	try {
-	    let {chatHistory, newValue} = JSON.parse(event.body);
-
-	    if (!Array.isArray(chatHistory)){
-		throw new Error("Invalid chat history format; expected an array.");
-	    }
+	    let {chatHistory, newValue} = JSON.parse(event.body)
 
 	    chatHistory.push({
 		role: 'user',
 		content: newValue
-	    });
+	    })
 	    
 	    // generate chat completion from the LLM
 	    const response = await llm.invoke([
-		['system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."],
-		['human', newValue],
-	    ]);
+		('system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."),
+		('messages',chatHistory),
+		('human', newValue),
+	    ])
 
 	    chatHistory.push({
 		role: 'assistant',
 		content: response.content
-	    });    
+	    })    
 	    
 	    return {
 		statusCode: 200,
 		body: JSON.stringify(chatHistory),
-	    };
+	    }
 	} catch (error) {
 	    return {
 		statusCode: 500,
 		body: JSON.stringify({ message: `Server error: ${error.message}` }),
-	    };
+	    }
 	}
     }
 }
 
-export { handler };
+export { handler }

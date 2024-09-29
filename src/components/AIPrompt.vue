@@ -339,6 +339,8 @@ async function uploadFile(e: Event) {
   formData.append('file', fileInput.files[0])
   formData.append('chatHistory', JSON.stringify(chatHistory.value))
 
+  console.log(llmEndpoints[selectedLLM.value]) //debug
+
   try {
     const response = (await fetch(llmEndpoints[selectedLLM.value], {
       method: 'POST',
