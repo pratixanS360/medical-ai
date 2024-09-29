@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer'
 import OpenAI from 'openai'
-import { encoding_for_model } from 'tiktoken' // Add tiktoken for token counting
+import { encodingForModel } from 'js-tiktoken' // Add js-tiktoken for token counting
 
 const openai = new OpenAI({
   organization: process.env.VITE_ORG_ID,
@@ -13,7 +13,7 @@ const MIN_REQUIRED_TOKENS = 2000 // Define a minimum threshold
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // Example: 2MB size limit
 
 // Initialize the tokenizer for GPT-4o-mini
-const tokenizer = encoding_for_model('gpt-4o-mini')
+const tokenizer = encodingForModel('gpt-4o-mini')
 
 // Function to calculate tokens and pad if needed
 function padTokensIfNeeded(messages, timelineData) {
