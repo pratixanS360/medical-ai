@@ -57,11 +57,13 @@ const processUserQuery = async (chatHistory, newValue) => {
     })
 
     const textSplitter = new RecursiveCharacterTextSplitter({
-	chunkSize: 1000,
-	chunkOverlap: 200,
+	chunkSize: 500,
+	chunkOverlap: 100,
     })
+
+    const contentArray = chatHistory.map(message => message.content)
     
-    const splits = await textSplitter.createDocuments(chatHistory)
+    const splits = await textSplitter.createDocuments(contentArray)
 
     const embeddings = new MistralAIEmbeddings({
 	model: "mistral-embed",
