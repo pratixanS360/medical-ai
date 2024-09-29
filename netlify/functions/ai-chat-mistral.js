@@ -1,19 +1,11 @@
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
-import { MemoryVectorStore } from "langchain/vectorstores/memory"
-import { ChatMistralAI, MistralAIEmbeddings } from "@langchain/mistralai"
-import { pull } from "langchain/hub"
-import { ChatPromptTemplate } from "@langchain/core/prompts"
-import { StringOutputParser } from "@langchain/core/output_parsers"
-import { createStuffDocumentsChain } from "langchain/chains/combine_documents"
+import { Mistral } from '@mistralai/mistralai';
+import { Buffer } from 'buffer';
 
+const apiKey = process.env.MISTRAL_API_KEY
+const llm = new Mistral({apiKey: apiKey})
 
 const MAX_TOKENS = 4096
 const MAX_FILE_SIZE = 2 * 1024 *1024
-
-const llm = new ChatMistralAI({
-    model: "mistral-large-latest",
-    temperature: 0,  // Adjust the temperature as needed
-})
 
 
 // Function to parse multipart form data
@@ -47,73 +39,6 @@ const parseMultipartForm = (event) => {
 	throw new Error('Error parsing multipart form: ' + error.message)
     }
     return result
-}
-
-const processUserQuery = async (chatHistory, newValue) => {
-
-    try {
-
-    	chatHistory.push({
-	    role: 'user',
-	    content: newValue
-    	})
-
-    	const textSplitter = new RecursiveCharacterTextSplitter({
-	    chunkSize: 500,
-	    chunkOverlap: 100,
-    	})
-
-    	if (!chatHistory || !Array.isArray(chatHistory)) {
-     	   throw new Error("chatHistory is undefined or not an array.")
-    	}
-
-	const contentArray = chatHistory.map(message => {
-	if (!message.content) throw new Error("Message content is missing.")
-	return message.content
-	})
-    	
-
-    	const splits = await textSplitter.createDocuments(contentArray)
-
-	const embeddings = new MistralAIEmbeddings({
-	      model: "mistral-embed",
-    	})
-
-    	const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
-
-	const retriever = vectorStore.asRetriever()
-    	const retrievedDocs = await retriever.invoke(newValue)
-
-	if (!retrievedDocs) {
-      	   throw new Error("retrievedDocs is undefined or null.")
-    	}
-	
-	const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt")
-
-	const ragChain = await createStuffDocumentsChain({
-	      llm,
-	      prompt,
-	      outputParser: new StringOutputParser(),
-	})
-
-    	const response = await ragChain.invoke({
-	      question: newValue,
-	      context: retrievedDocs,
-    	})
-	
-    } catch(error) {
-      	return {
-	       statusCode: 500,
-	       body: JSON.stringify({ message: `Server error processUserQuery: ${error.message}` }),
-	}	
-    } 
-     
-    chatHistory.push({
-	role: 'assistant',
-	content: response.output
-    })
-
-    return chatHistory
 }
 
 const handler = async (event) => {
@@ -176,16 +101,15 @@ const handler = async (event) => {
 
 
 	    // generate chat completion from the LLM
-	    const updatedChatHistory = await processUserQuery(chatHistory, newValue)
-	    //const response = await llm.invoke([
-	    //	('system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."),
-	    //	('human', newValue),
-	    // 	 ])
+	    const response = await client.chat.complete({
+		model: 'mistral-large-latest',
+		messages: chatHistory,
+	    })
 
-	    //chatHistory.push({
-	    //		role: 'assistant',
-	    //		content: response.content
-	    //	    })    
+	    chatHistory.push({
+	    		role: 'assistant',
+	    		content: response.content
+	    	    })    
 	    
 	    return {
 		statusCode: 200,
@@ -194,7 +118,7 @@ const handler = async (event) => {
 	} catch (error) {
 	    return {
 		statusCode: 500,
-		body: JSON.stringify({ message: `Server error 1: ${error.message}` }),
+		body: JSON.stringify({ message: `Server error: ${error.message}` }),
 	    }
 	}
     }
