@@ -72,29 +72,13 @@ const processUserQuery = async (chatHistory, newValue) => {
     	})
 
     	const vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings)
-	
-    } catch(error) {
-      	return {
-	       statusCode: 500,
-	       body: JSON.stringify({ message: `Server error textsplitter: ${error.message}` }),
-	}	
-    } 
-    
-    
-    try {
-    	const retriever = vectorStore.asRetriever()
+
+	const retriever = vectorStore.asRetriever()
     	const retrievedDocs = await retriever.invoke(newValue)
-    } catch (error) {
-      	return {
-	       statusCode: 500,
-	       body: JSON.stringify({ message: `Server error retriever: ${error.message}` }),
-	}
-    }
 
-    const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt")
+	const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt")
 
-    try {
-    	const ragChain = await createStuffDocumentsChain({
+	const ragChain = await createStuffDocumentsChain({
 	      llm,
 	      prompt,
 	      outputParser: new StringOutputParser(),
@@ -104,13 +88,14 @@ const processUserQuery = async (chatHistory, newValue) => {
 	      question: newValue,
 	      context: retrievedDocs,
     	})
-    } catch (error) {
-        return {
+	
+    } catch(error) {
+      	return {
 	       statusCode: 500,
-               body: JSON.stringify({ message: `Server error ragchain: ${error.message}` }),
-	}
-    }
-    
+	       body: JSON.stringify({ message: `Server error processUserQuery: ${error.message}` }),
+	}	
+    } 
+     
     chatHistory.push({
 	role: 'assistant',
 	content: response.output
