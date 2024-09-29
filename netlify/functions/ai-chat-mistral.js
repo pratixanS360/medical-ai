@@ -101,7 +101,7 @@ const handler = async (event) => {
 
 
 	    // generate chat completion from the LLM
-	    const response = await client.chat.complete({
+	    const response = await llm.chat.complete({
 		model: 'mistral-large-latest',
 		messages: chatHistory,
 	    })
