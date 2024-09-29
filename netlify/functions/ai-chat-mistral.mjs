@@ -63,7 +63,11 @@ const handler = async (event) => {
   }
 
   try {
-    const { chatHistory, newValue, docs } = JSON.parse(event.body);
+    const { chatHistory = [], newValue, docs } = JSON.parse(event.body);
+
+    if (!Array.isArray(chatHistory)){
+       throw new Error("Invalid chat history format; expected an array.");
+    }
 
     // Process the user query and timeline data, then generate a response
     const updatedChatHistory = await processUserQuery(chatHistory, newValue, docs);
