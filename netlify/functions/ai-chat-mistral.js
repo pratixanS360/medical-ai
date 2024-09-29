@@ -108,7 +108,7 @@ const handler = async (event) => {
 
 	    chatHistory.push({
 	    		role: 'assistant',
-	    		content: response.content
+	    		content: response.choices[0].message.content
 	    	    })    
 	    
 	    return {
