@@ -1,10 +1,10 @@
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { ChatMistralAI, MistralAIEmbeddings } from "@langchain/mistralai";
-import { pull } from "langchain/hub";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { StringOutputParser } from "@langchain/core/output_parsers";
-import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter"
+import { MemoryVectorStore } from "langchain/vectorstores/memory"
+import { ChatMistralAI, MistralAIEmbeddings } from "@langchain/mistralai"
+import { pull } from "langchain/hub"
+import { ChatPromptTemplate } from "@langchain/core/prompts"
+import { StringOutputParser } from "@langchain/core/output_parsers"
+import { createStuffDocumentsChain } from "langchain/chains/combine_documents"
 
 
 const MAX_TOKENS = 4096
@@ -50,20 +50,28 @@ const parseMultipartForm = (event) => {
 }
 
 const processUserQuery = async (chatHistory, newValue) => {
-    
-    chatHistory.push({
-	role: 'user',
-	content: newValue
-    })
-
-    const textSplitter = new RecursiveCharacterTextSplitter({
-	chunkSize: 500,
-	chunkOverlap: 100,
-    })
 
     try {
-    	const contentArray = chatHistory.map(message => message.content)
-    	console.log(contentArray) //debug
+
+    	chatHistory.push({
+	    role: 'user',
+	    content: newValue
+    	})
+
+    	const textSplitter = new RecursiveCharacterTextSplitter({
+	    chunkSize: 500,
+	    chunkOverlap: 100,
+    	})
+
+    	if (!chatHistory || !Array.isArray(chatHistory)) {
+     	   throw new Error("chatHistory is undefined or not an array.")
+    	}
+
+	const contentArray = chatHistory.map(message => {
+	if (!message.content) throw new Error("Message content is missing.")
+	return message.content
+	})
+    	
 
     	const splits = await textSplitter.createDocuments(contentArray)
 
@@ -76,6 +84,10 @@ const processUserQuery = async (chatHistory, newValue) => {
 	const retriever = vectorStore.asRetriever()
     	const retrievedDocs = await retriever.invoke(newValue)
 
+	if (!retrievedDocs) {
+      	   throw new Error("retrievedDocs is undefined or null.")
+    	}
+	
 	const prompt = await pull<ChatPromptTemplate>("rlm/rag-prompt")
 
 	const ragChain = await createStuffDocumentsChain({
