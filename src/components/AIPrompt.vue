@@ -282,7 +282,6 @@ const sendQuery = () => {
 
   const llmEndpoints = {
       'gpt-4': '/.netlify/functions/ai-chat',
-      'llama-3.1': '/.netlify/functions/ai-chat-llama',
       'mistral': '/.netlify/functions/ai-chat-mistral'
   }
   
@@ -505,7 +504,6 @@ const closeSession = () => {
     <label for="llm-select">Choose Language Model:</label>
     <select id="llm-select" name="llm-select" v-model="selectedLLM">
          <option value="gpt-4">GPT-4</option>
-         <option value="llama-3.1">Llama 3.1</option>
          <option value="mistral">Mistral</option>
       </select>
     </div>
