@@ -88,7 +88,7 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
     });
 
     chatHistory.push({
-	role: 'system',
+	role: 'assistant',
 	content: response.output
     });
 
@@ -128,6 +128,9 @@ const handler = async (event) => {
 
 	    const updatedChatHistory = await processUserQuery(chatHistory, newValue, formData.file.content);
 
+	    // Debug
+	    console.log('markdown file accessed!')
+	    
 	    return {
 		statusCode: 200,
 		body: JSON.stringify(updatedChatHistory)
