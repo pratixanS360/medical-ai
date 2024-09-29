@@ -138,6 +138,8 @@ const handler = async (event) => {
 		    chatHistory: updatedChatHistory
 		})
 	    }
+	}
+	
     } else {
 	try {
 	    let {chatHistory, newValue} = JSON.parse(event.body)
