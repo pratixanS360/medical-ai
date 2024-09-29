@@ -62,6 +62,7 @@ const processUserQuery = async (chatHistory, newValue) => {
     })
 
     const contentArray = chatHistory.map(message => message.content)
+    console.log(contentArray) //debug
     
     const splits = await textSplitter.createDocuments(contentArray)
 
