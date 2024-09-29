@@ -176,7 +176,7 @@ const handler = async (event) => {
 	} catch (error) {
 	    return {
 		statusCode: 500,
-		body: JSON.stringify({ message: `Server error: ${error.message}` }),
+		body: JSON.stringify({ message: `Server error 1: ${error.message}` }),
 	    }
 	}
     }
