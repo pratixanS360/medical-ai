@@ -53,7 +53,7 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
     
     chatHistory.push({
 	role: 'user',
-	content: newValue,
+	content: newValue
     });
 
     const textSplitter = new RecursiveCharacterTextSplitter({
@@ -89,7 +89,7 @@ const processUserQuery = async (chatHistory, newValue, timeLineData) => {
 
     chatHistory.push({
 	role: 'system',
-	content: response.output,
+	content: response.output
     });
 
     return chatHistory;
@@ -146,11 +146,15 @@ const handler = async (event) => {
 		throw new Error("Invalid chat history format; expected an array.");
 	    }
 
+	    chatHistory.push({
+		role: 'user',
+		content: newValue
+	    });
+	    
 	    // generate chat completion from the LLM
 	    const response = await llm.invoke([
 		['system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."],
-		['messaages',chatHistory],
-		['user', newValue],
+		['human', newValue],
 	    ]);
 
 	    chatHistory.push({
