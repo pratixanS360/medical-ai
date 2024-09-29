@@ -113,12 +113,8 @@ const handler = async (event) => {
 	}
 
 	try {
-
-	    //let {chatHistory, newValue} = JSON.parse(event.body)
-	    
 	    const formData = parseMultipartForm(event)
 
-	    // Check if formData contains file
 	    if (!formData || !formData.file) {
 		return {
 		    statusCode: 400,
@@ -126,7 +122,6 @@ const handler = async (event) => {
 		}
 	    }
 
-	    //const updatedChatHistory = await processUserQuery(chatHistory, newValue, formData.file.content)
 	    const updatedChatHistory = formData.chatHistory || []
 	    const newItem = {
 		role: 'system',
@@ -135,7 +130,7 @@ const handler = async (event) => {
 	    if (!updatedChatHistory.includes(newItem)) {
 		updatedChatHistory.push(newItem)
 	    }
-	    
+
 	    return {
 		statusCode: 200,
 		body: JSON.stringify({
@@ -143,12 +138,6 @@ const handler = async (event) => {
 		    chatHistory: updatedChatHistory
 		})
 	    }
-	} catch (error) {
-	    return {
-		statusCode: 500,
-		body: JSON.stringify({ message: `Server error: ${error.message}` })
-	    }
-	}
     } else {
 	try {
 	    let {chatHistory, newValue} = JSON.parse(event.body)
@@ -157,22 +146,23 @@ const handler = async (event) => {
 		role: 'user',
 		content: newValue
 	    })
-	    
-	    // generate chat completion from the LLM
-	    const response = await llm.invoke([
-		('system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."),
-		('messages',chatHistory),
-		('human', newValue),
-	    ])
 
-	    chatHistory.push({
-		role: 'assistant',
-		content: response.content
-	    })    
+	    const data = chatHistory[chatHistory.length - 2].content
+	    // generate chat completion from the LLM
+	    const updatedChatHistory = await processUserQuery(chatHistory, newValue, data)
+	    //const response = await llm.invoke([
+	    //	('system',"You are a helpful assistant that responds to user queries related to his medical records. Do not answer if you do not have access to the user's health record or relevant context."),
+	    //	('human', newValue),
+	    //  ])
+
+	    //chatHistory.push({
+	    //		role: 'assistant',
+	    //		content: response.content
+	    //	    })    
 	    
 	    return {
 		statusCode: 200,
-		body: JSON.stringify(chatHistory),
+		body: JSON.stringify(updatedChatHistory),
 	    }
 	} catch (error) {
 	    return {
