@@ -339,8 +339,6 @@ async function uploadFile(e: Event) {
   formData.append('file', fileInput.files[0])
   formData.append('chatHistory', JSON.stringify(chatHistory.value))
 
-  console.log(llmEndpoints[selectedLLM.value]) //debug
-
   try {
     const response = (await fetch(llmEndpoints[selectedLLM.value], {
       method: 'POST',
@@ -348,7 +346,7 @@ async function uploadFile(e: Event) {
     })) as Response
 
     if (!response.ok) {
-      writeMessage('Failed to upload file (1)', 'error')
+      writeMessage('Failed to upload file', 'error')
       return
     }
     const data = await response.json()
@@ -357,7 +355,7 @@ async function uploadFile(e: Event) {
       chatHistory.value = data.chatHistory
     }
   } catch (error) {
-    writeMessage('Failed to upload file (2)', 'error')
+    writeMessage('Failed to upload file', 'error')
   }
 }
 
