@@ -279,7 +279,7 @@ const selectedLLM = ref('gpt-4') // Default to ai-chat (OpenAI)
 
 const llmEndpoints = {
       'gpt-4': '/.netlify/functions/ai-chat',
-      'mistral': '/.netlify/functions/ai-chat-mistral'
+      'mistral': '/.netlify/functions/ai-chat-mistral',
       'llama': '/.netlify/functions/ai-chat-llama'
 }
   
