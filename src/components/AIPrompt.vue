@@ -280,6 +280,7 @@ const selectedLLM = ref('gpt-4') // Default to ai-chat (OpenAI)
 const llmEndpoints = {
       'gpt-4': '/.netlify/functions/ai-chat',
       'mistral': '/.netlify/functions/ai-chat-mistral'
+      'llama': '/.netlify/functions/ai-chat-llama'
 }
   
 // Send query to LLM
@@ -505,6 +506,7 @@ const closeSession = () => {
     <select id="llm-select" name="llm-select" v-model="selectedLLM">
          <option value="gpt-4">GPT-4</option>
          <option value="mistral">Mistral</option>
+	 <option value="llama">Llama3.1</option>
       </select>
     </div>
     <div :class="'message ' + appState.messageType.value">

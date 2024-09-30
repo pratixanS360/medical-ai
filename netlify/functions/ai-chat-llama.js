@@ -1,10 +1,9 @@
-import { Mistral } from '@mistralai/mistralai';
+import { Groq } from 'qroq-sdk';
 import { Buffer } from 'buffer';
 
-const apiKey = process.env.MISTRAL_API_KEY
-const llm = new Mistral({apiKey: apiKey})
+const apiKey = process.env.GROQ_API_KEY
+const llm = new Groq({ apiKey: apiKey })
 
-const MAX_TOKENS = 4096
 const MAX_FILE_SIZE = 2 * 1024 *1024
 
 
@@ -99,16 +98,16 @@ const handler = async (event) => {
 		content: newValue
 	    })
 
-
 	    // generate chat completion from the LLM
-	    const response = await llm.chat.complete({
-		model: 'mistral-large-latest',
-		messages: {
-		    role:'system',
+	    const response = await llm.chat.completions.create({messages: [
+		{
+		    role: "system",
 		    content: "You are a helpful and friendly medical assistant that responds to user queries related to their health records. Answer queries related to the user's health record or relevant context. Any response should be in reference to the health record. Do not make any assumptions while answering their queries. Also strictly do not suggest medications if not mentioned in the health record. Any other relevant general information should be given with caution to consult their physician/doctor. Generate response in plain text.",
-		},chatHistory,
-	    })
-
+		}, chatHistory
+	    ],
+		model: "llama3-8b-8192",
+	   })
+	    
 	    chatHistory.push({
 	    		role: 'assistant',
 	    		content: response.choices[0].message.content
