@@ -100,7 +100,11 @@ const handler = async (event) => {
 
 	    // generate chat completion from the LLM
 	    const response = await llm.chat.completions.create({
-		messages: chatHistory,
+		messages: [{
+		    role: "system",
+		    content: "You are a helpful and friendly medical assistant. Your role is to respond to user queries related to their health records or relevant context. Ensure that all responses strictly reference the information provided in the health record without making any assumptions. Do not suggest medications unless they are explicitly mentioned in the health record. Provide any additional general information carefully, with a reminder to consult their physician or doctor for specific medical advice. Generate responses in plain text."
+		}],
+		chatHistory,
 		model: "llama3-8b-8192",
 	   })
 	    
