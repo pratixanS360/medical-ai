@@ -1,4 +1,4 @@
-import { Groq } from 'qroq-sdk';
+import { Groq } from 'groq-sdk';
 import { Buffer } from 'buffer';
 
 const apiKey = process.env.GROQ_API_KEY
