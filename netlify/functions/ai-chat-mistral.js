@@ -91,9 +91,16 @@ const handler = async (event) => {
 	    }
 	}
     } else {
-	try {
-	    let {chatHistory, newValue} = JSON.parse(event.body)
 
+	let {chatHistory, newValue} = JSON.parse(event.body)
+
+	chatHistory.push({
+	    role: "system",
+	    content: "You are a helpful and friendly medical assistant. Your role is to respond to user queries related to their health records or relevant context. Ensure that all responses strictly reference the information provided in the health record without making any assumptions. Do not suggest medications unless they are explicitly mentioned in the health record. Provide any additional general information carefully, with a reminder to consult their physician or doctor for specific medical advice. Generate responses in plain text."
+	})
+	
+	try {
+	    
 	    chatHistory.push({
 		role: 'user',
 		content: newValue
