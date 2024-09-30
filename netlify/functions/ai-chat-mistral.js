@@ -93,12 +93,6 @@ const handler = async (event) => {
     } else {
 	try {
 	    let {chatHistory, newValue} = JSON.parse(event.body)
-	    
-	    chatHistory.push({
-		role: 'system',
-		content: "You are a helpful medical assistant that responds to user queries related to their health records. Answer queries related to the user's health record or relevant context. Any response should be in re\
-ference to the health record. General information regarding health issues should be provided with caution to contact a real doctor."
-	    })
 
 	    chatHistory.push({
 		role: 'user',
@@ -109,6 +103,8 @@ ference to the health record. General information regarding health issues should
 	    // generate chat completion from the LLM
 	    const response = await llm.chat.complete({
 		model: 'mistral-large-latest',
+		system: "You are a helpful medical assistant that responds to user queries related to their health records. Answer queries related to the user's health record or relevant context. Any response should be in re\
+ference to the health record. General information regarding health issues should be provided with caution to contact a real doctor.",
 		messages: chatHistory,
 	    })
 
