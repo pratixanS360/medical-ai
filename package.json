@@ -29,7 +29,7 @@
     "@langchain/mistralai": "0.1.1",
     "@mistralai/mistralai": "1.1.0",
     "buffer":"6.0.3",
-    "groq":"0.7.0"
+    "groq-sdk":"0.7.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.4",
